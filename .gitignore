@@ -1,8 +1,19 @@
+
+# 환경 변수
 .env
+
+# Python 캐시
 __pycache__/
 *.pyc
+
+# 패키지
 *.egg-info/
 dist/
 build/
+
+# 아이디어 파일 (IntelliJ, PyCharm 등)
 .idea/
+
+# 데이터 파일
 *.db
+
