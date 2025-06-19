@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from app.api.v1.routers import auth, story
 from app.AI import router as ai_router
