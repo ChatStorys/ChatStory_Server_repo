@@ -3,7 +3,9 @@ from fastapi import FastAPI
 from app.api.v1.routers import auth, story
 from app.AI import router as ai_router
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = FastAPI()
 
