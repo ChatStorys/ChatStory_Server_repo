@@ -1,63 +1,356 @@
-from fastapi import APIRouter, HTTPException, Response, Depends, Request
-from app.schemas.story_schema import StoryCreate, FrontChatRequest
-from app.services.story_service import create_story, save_user_message
-from app.core.jwt import verify_access_token
+# from fastapi import APIRouter, HTTPException, Response, Depends, Request, Header
+# from app.schemas.story_schema import StoryCreateRequest, StoryCreateResponse, FrontChatRequest, ChapterEndAIRequest, ChapterEndAIResponse, FinishStoryResponse
+# from app.services.story_service import get_creating_story, create_story
+# from app.core.jwt import verify_access_token
 
+# router = APIRouter()
+
+# @router.post("/create", response_model=StoryCreateResponse)
+# async def create_story_router(
+#     body: StoryCreateRequest,
+#     authorization: str = Header(..., alias="Authorization")
+# ):  
+    
+#     # 1) 헤더에서 Bearer 토큰 추출
+#     if not authorization.startswith("Bearer "):
+#         raise HTTPException(status_code=401, detail="잘못된 토큰 형식입니다.")
+#     token = authorization[7:]
+    
+#     # 토큰 검증
+#     try:
+#         payload = verify_access_token(token)
+#         user_id = payload.get("sub")
+#     except Exception as e:
+#         raise HTTPException(status_code=403, detail="토큰이 유효하지 않습니다.")
+
+#     # 이미 작성 중인 소설이 있으면 이어쓰기
+#     existing = get_creating_story(user_id)
+#     if existing:
+#         return StoryCreateResponse(
+#             status= "success",
+#             code= 200,
+#             book_id=str(existing["_id"]),
+#             message="작성 중인 소설이 있어, 이어쓰기 모드로 진입합니다."
+#         )
+        
+#     try:    # 4) 새 소설 생성
+#         new_id = create_story(user_id, body)
+#         return StoryCreateResponse(
+#             status= "success",
+#             code= 201,
+#             book_id=new_id,
+#             message="새 소설 작성을 시작합니다."
+#         )
+        
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"서버와 연결되지 않았습니다 : {e!r}")
+
+# @router.post("/chat/send")
+# async def chat_send(req: FrontChatRequest, request: Request):
+#     # 1. 사용자 인증 (토큰 검증)
+#     token = request.cookies.get("access_token")
+#     if not token:
+#         raise HTTPException(status_code=401, detail="토큰이 누락되었습니다.")
+
+#     if token.startswith("Bearer "):
+#         token = token[7:]
+
+#     try:
+#         payload = verify_access_token(token)
+#         user_id = payload.get("sub")
+#     except Exception:
+#         raise HTTPException(status_code=403, detail="토큰이 유효하지 않습니다.")
+
+#     # 3. 바로 응답
+#     return {
+#         chat_id: save_user_message(user_id, req),
+#         "message": "채팅 메시지가 정상적으로 저장되었습니다."
+#     }
+    
+# @router.post("/chapter/end", tags=["Chapter"], response_model=ChapterEndAIResponse)
+# async def chapter_end(
+#     req: ChapterEndAIRequest,
+#     authorization: str = Header(None)
+# ):
+#     if not authorization or not authorization.startswith("Bearer "):
+#         raise HTTPException(401, "토큰 누락/형식 오류")
+#     token = authorization[7:]
+#     try:
+#         payload = verify_access_token(token)
+#         user_id = payload["sub"]
+#     except:
+#         raise HTTPException(403, "유효하지 않은 토큰")
+
+#     try:
+#         return end_chapter(user_id, req)
+#     except Exception as e:
+#         raise HTTPException(500, f"챕터 종료 실패: {e}")
+    
+# @router.post("/finish", response_model=FinishStoryResponse)
+# async def finish_story_router(
+#     book_id: str,
+#     authorization: str = Header(None)
+# ):
+#     # 토큰 검증 (생략: 앞과 동일 패턴)
+#     if not authorization or not authorization.startswith("Bearer "):
+#         raise HTTPException(401, "토큰 누락/형식 오류")
+#     token = authorization[7:]
+#     user_id = verify_access_token(token)["sub"]
+
+#     try:
+#         finished = finish_story(user_id, book_id)
+#         return FinishStoryResponse(book_id=finished, message="소설 완료 및 아카이브 저장 완료")
+#     except Exception as e:
+#         raise HTTPException(500, f"소설 완료 실패: {e}")
+
+from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.schemas.story_schema import (
+    StoryCreateRequest, StoryCreateResponse,
+    ChapterEndAIRequest, ChapterEndAIResponse, 
+    FinishStoryRequest, FinishStoryResponse, 
+    ChatSendRequest, ChatSendResponse,
+    ArchiveItemResponse, StoryContentResponse, DeleteResponse
+)
+from app.services.story_service import (
+    get_creating_story, create_story,
+    end_chapter, finish_story, 
+    list_archived_stories,
+    get_story_content, delete_story
+)
+from app.core.jwt import verify_access_token
+from typing import List
+# APIRouter 인스턴스 생성
 router = APIRouter()
 
-@router.post("/create")
-async def create_story_router(story: StoryCreate, request: Request):
-    # 쿠키에서 토큰 가져오기
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="토큰이 누락되었습니다.")
+# HTTP Bearer 토큰 인증 스키마 정의
+# auto_error=False 로 설정하면 검증 실패 시 직접 예외 처리 가능
+bearer_scheme = HTTPBearer(auto_error=False)
 
-    # Bearer 제거
-    if token.startswith("Bearer "):
-        token = token[7:]
+
+async def get_current_user(
+    creds: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+) -> str:
+    """
+    1. Swagger UI 또는 클라이언트 요청의 Authorization 헤더에서 Bearer 토큰을 파싱
+    2. 토큰이 없거나 Bearer 스킴이 아니면 401 반환
+    3. 토큰을 검증하여 payload 추출 후, sub(claim)로 user_id 반환
+    4. 유효하지 않으면 403 반환
+    """
+    # 1) creds가 없거나 스킴이 bearer가 아니면 인증 실패
+    if not creds or creds.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bearer 토큰이 필요합니다."
+        )
+    try:
+        # 2) 토큰 검증 및 payload 획득
+        payload = verify_access_token(creds.credentials)
+        user_id = payload.get("sub")
+        # sub(claim)가 없으면 예외 발생
+        if not user_id:
+            raise ValueError("sub(claim)이 없습니다.")
+        return user_id  # 유효한 user_id 반환
+    except Exception:
+        # 토큰이 유효하지 않거나 만료된 경우
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="유효하지 않은 또는 만료된 토큰입니다."
+        )
+
+
+def send_message_to_ai_server(user_id: str, req: ChatSendRequest) -> ChatSendResponse:
+    """
+    더미 함수: 실제 AI 서버 호출 대신 직접 처리
+    """
+    # 실제 로직: handle_story_continue(user_id, req.prompt, req.book_id)
+    # 당장은 더미 응답 반환
+    return ChatSendResponse(
+        status="success",
+        code=200,
+        message=f"Dummy response for prompt: {req.prompt}",
+        prompt=f"{req.prompt} 이 내용은 dummy 함수에서 나온 prompt로 ai client를 다시 구현할 것"
+    )
     
-    # 토큰 검증
+def send_chapter_end_to_ai(user_id: str, req: ChapterEndAIRequest) -> ChapterEndAIResponse:
+    """
+    더미 함수: AI 서버의 챕터 종료 처리 호출 대체
+    """
+    # 실제 로직: handle_story_end(user_id, req)
+    return ChapterEndAIResponse(
+        status="success",
+        code=200,
+        message="나중에 AI와 연동하면 실제 함수 불러올 것",
+        summary="Dummy chapter summary",
+        recommanded_music=[
+            {"title": "Dummy recommended music", "artist": "Dummy Artist"}
+        ]  
+    )
+
+# 소설 생성
+@router.post(
+    "/create",
+    response_model=StoryCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(bearer_scheme)],  # OpenAPI에 보안 스키마 추가
+    summary="새 소설 생성 또는 이어쓰기 모드 진입"
+)
+async def create_story_router(
+    body: StoryCreateRequest,
+    user_id: str = Depends(get_current_user),  # 인증된 user_id를 주입
+):
+    """
+    1) 작성 중인 소설이 있으면 이어쓰기 모드 진입
+    2) 없으면 새 소설 생성 후 그 ID를 반환
+    """
+    # 이어쓰기 로직: workingFlag=True인 문서 조회
+    existing = get_creating_story(user_id)
+    if existing:
+        return StoryCreateResponse(
+            status="success",
+            code=200,
+            book_id=str(existing.get("_id")),  # 기존 소설 ID 반환
+            message="작성 중인 소설이 있어, 이어쓰기 모드로 진입합니다."
+        )
+
+    # 새 소설 생성
     try:
-        payload = verify_access_token(token)
-        user_id = payload.get("sub")
+        new_id = create_story(user_id, body)
+        return StoryCreateResponse(
+            status="success",
+            code=201,
+            book_id=new_id,  # 생성된 신규 book_id
+            message="새 소설 작성을 시작합니다."
+        )
     except Exception as e:
-        raise HTTPException(status_code=403, detail="토큰이 유효하지 않습니다.")
+        # 내부 로직 에러 시 서버 로그에 출력 후 500 반환
+        print("create_story 에러:", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="서버 오류로 소설 생성에 실패했습니다."
+        )
 
-    # 제목과 장르 저장 (예시)
-    # 실제로는 DB에 저장해야 함
+# 채팅 전송
+@router.post(
+    "/chat/send",
+    response_model=ChatSendResponse,
+    summary="사용자 메시지를 AI 서버로 전달"
+)
+async def chat_send(
+    req: ChatSendRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """
+    서버에서는 채팅 기록을 저장하지 않고,
+    바로 더미 AI 처리 함수 호출
+    """
     try:
-        book_id = create_story(story, payload)
-        return {
-            "book_id": book_id,
-            "message": "소설 생성 완료"
-        }
+        return send_message_to_ai_server(user_id, req)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="서버와 연결되지 않았습니다.")
+        print("send_message_to_ai_server 에러:", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI 처리 중 오류가 발생했습니다: {e}"
+        )
 
-@router.post("/chat/send")
-async def chat_send(req: FrontChatRequest, request: Request):
-    # 1. 사용자 인증 (토큰 검증)
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="토큰이 누락되었습니다.")
 
-    if token.startswith("Bearer "):
-        token = token[7:]
-
+# 챕터 끝내기
+@router.post(
+    "/chapter/end",
+    response_model=ChapterEndAIResponse,
+    summary="챕터 종료 요청을 AI 서버로 전달"
+)
+async def chapter_end(
+    req: ChapterEndAIRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """
+    챕터 종료 시 AI 서버에 요약 및 음악 추천 요청을 포워딩합니다.
+    서버에서는 별도 저장을 수행하지 않습니다.
+    """
     try:
-        payload = verify_access_token(token)
-        user_id = payload.get("sub")
-    except Exception:
-        raise HTTPException(status_code=403, detail="토큰이 유효하지 않습니다.")
+        return send_chapter_end_to_ai(user_id, req)
+    except Exception as e:
+        print("send_chapter_end_to_ai 에러:", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="AI 처리 중 오류가 발생했습니다."
+        )
 
-    # 2. 사용자 메시지 DB에 저장
+
+
+# 소설 끝내기
+@router.post(
+    "/finish", 
+    response_model=FinishStoryResponse,
+    summary="소설 완료 처리"
+)
+async def finish_story_router(
+    book_id: str = Query(..., description="완료할 소설의 ID"),
+    user_id: str = Depends(get_current_user)
+):
+    """
+    workingFlag를 False로 변경하여 소설을 완료 처리합니다.
+    """
     try:
-        chat_id = save_user_message(user_id, req)
-    except Exception:
-        raise HTTPException(status_code=500, detail="메시지 저장 실패")
+        success = finish_story(user_id, book_id)
+        if not success:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="해당 소설을 찾을 수 없습니다.")
+        return FinishStoryResponse(
+            status="success", code=200,
+            message="소설 작성 완료 처리되었습니다."
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("finish_story 에러:", e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="소설 완료 처리에 실패했습니다.")
 
-    # 3. 바로 응답
-    return {
-        "chat_id": chat_id,
-        "message": "채팅 메시지가 정상적으로 저장되었습니다."
-    }
+# 5. 아카이브 목록 조회
+@router.get(
+    "/archive",
+    response_model=List[ArchiveItemResponse],
+    summary="아카이브 목록 조회"
+)
+async def get_archive_list(
+    user_id: str = Depends(get_current_user)
+):
+    """
+    완료된 소설 목록을 반환합니다 (workingFlag=False).
+    """
+    return list_archived_stories(user_id)
+
+# 6. 아카이브 소설 내용 조회
+@router.get(
+    "/archive/{book_id}",
+    response_model=StoryContentResponse,
+    summary="아카이브 소설 내용 조회"
+)
+async def get_archive_story(
+    book_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    story = get_story_content(user_id, book_id)
+    if not story:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail="해당 소설을 찾을 수 없습니다.")
+    return story
+
+# 7. 아카이브 소설 삭제
+@router.delete(
+    "/archive/{book_id}",
+    response_model=DeleteResponse,
+    summary="아카이브 소설 삭제"
+)
+async def delete_archive_story(
+    book_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    success = delete_story(user_id, book_id)
+    if not success:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail="해당 소설을 찾을 수 없습니다.")
+    return DeleteResponse(status="success", code=200, book_id=book_id,
+                          message="소설이 삭제되었습니다.")
