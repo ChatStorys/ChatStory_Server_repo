@@ -19,28 +19,7 @@ FastAPI 기반의 대화형 소설 생성 서비스 백엔드
 * **AI 통합**: 내부 더미 함수, 추후 외부 AI 서버 연동
 * **라이브러리**: Pydantic, PyMongo, httpx
 
-## 설치 및 실행
 
-```bash
-# Clone
-git clone https://github.com/ChatStorys/ChatStory_Server_repo.git
-cd ChatStory_Server_repo
-
-# 가상환경 생성 및 활성화
-python3 -m venv venv
-source venv/bin/activate
-
-# 의존성 설치
-pip install -r requirements.txt
-
-# 환경 변수 설정 (.env)
-# MONGO_URL: MongoDB 연결 문자열
-# DB_NAME: 사용 DB 이름 (기본: chatstory)
-# JWT_PRIVATE_KEY, JWT_PUBLIC_KEY: 인증용 키
-
-# 개발 서버 실행
-uvicorn app.main:app --reload
-```
 
 ## API 문서
 
