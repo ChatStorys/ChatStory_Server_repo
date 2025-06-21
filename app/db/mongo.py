@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 
-# .env 파일 로드
 load_dotenv()
 
 MONGO_URL = os.getenv("MONGO_URL")

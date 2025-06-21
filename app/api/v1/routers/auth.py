@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends
 # 회원 가입
+
 from app.schemas.user_schema import UserCreate, UserCreateResponse
-# from app.redis.queue import queue
+
 from app.services.user_service import create_user
 # 로그인
 from app.schemas.user_schema import UserLoginRequest, UserLoginResponse
@@ -32,7 +33,6 @@ async def register(user: UserCreate):
         user_id=user.user_id,
         message="회원 가입이 완료되었습니다."
     )
-
 
 
 @router.post("/login", response_model=UserLoginResponse)

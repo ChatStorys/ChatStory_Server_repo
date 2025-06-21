@@ -18,5 +18,5 @@ build/
 # 데이터 파일
 *.db
 
-# secrets 파일 (private.pem 파일)
+# secrets 파일 (pem 파일)
 secrets/
