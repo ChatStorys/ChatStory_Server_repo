@@ -38,6 +38,7 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/chatstory:latest
+        no-cache: true
     
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
