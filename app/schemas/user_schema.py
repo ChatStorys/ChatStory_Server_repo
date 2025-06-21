@@ -20,4 +20,6 @@ class UserLoginResponse(BaseModel): # 로그인 모델
     status: str
     code: int
     message: str
+    access_token: str
+    token_type: str
     

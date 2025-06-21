@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends, status
 # 회원 가입
 from app.schemas.user_schema import UserCreate, UserCreateResponse
 from app.services.user_service import create_user
@@ -30,13 +30,10 @@ async def register(user: UserCreate):
         user_id=user.user_id,
         message="회원 가입이 완료되었습니다."
     )
-<<<<<<< HEAD
->>>>>>> main
-=======
->>>>>>> acf28c1ecd45dab115345b664094d4905aa4609e
 
 
-@router.post("/login", response_model=UserLoginResponse)
+@router.post("/login", response_model=UserLoginResponse, status_code=status.HTTP_200_OK,
+             summary = "사용자 로그인 및 토큰 발급")
 async def login(user: UserLoginRequest, response: Response):
     db_user = get_user_by_id(user.user_id)
     if not db_user:
@@ -49,7 +46,7 @@ async def login(user: UserLoginRequest, response: Response):
     access_token = create_access_token(data={"sub": user.user_id})
     
     # 1. 응답 헤더에 Authorization 추가
-    response.headers["Authorization"] = f"Bearer {access_token}"
+    # response.headers["Authorization"] = f"Bearer {access_token}"
     
     # token type bearer -> 이 토큰을 가진 사람은 인증된 사용자로 간주 
     # bearer: 소지자(bearer)가 토큰의 권한을 가진다 => http-only 쿠키를 사용할 때는 bearer 필요 x
@@ -58,5 +55,7 @@ async def login(user: UserLoginRequest, response: Response):
     return UserLoginResponse(
         status="success",
         code=200,
-        message=f"{db_user['name']}님, 환영합니다!"
+        message=f"{db_user['name']}님, 환영합니다!",
+        access_token = access_token,
+        token_type = "bearer"
     )
