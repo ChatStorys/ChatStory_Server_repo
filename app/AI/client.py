@@ -7,7 +7,7 @@ from app.AI.schemas import (
     MusicItem
 )
 
-HF_API_URL = "https://api-inference.huggingface.co/models/Jinuuuu/KoELECTRA_fine_tunning_emotion"
+HF_API_URL = "https://hglww4g5jugd2khs.us-east-1.aws.endpoints.huggingface.cloud"
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
 headers = {
