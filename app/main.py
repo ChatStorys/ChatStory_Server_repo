@@ -21,7 +21,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 
 app.include_router(story.router, prefix="/story", tags=["Stories"])
 
-app.include_router(ai_router.router, prefix="/ai", tags=["AI ChatStory"])
+# app.include_router(ai_router.router, prefix="/ai", tags=["AI ChatStory"])
 
 # 루트 엔드포인트
 # 1. 서버가 잘 작동 중인지 브라우저에서 확인 가능
