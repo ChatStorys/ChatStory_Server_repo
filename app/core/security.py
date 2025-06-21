@@ -1,6 +1,10 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import fastapi
 
+
+load_dotenv()
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+
 app.fastapi()
 
 app.add_middleware(
