@@ -3,7 +3,10 @@ from typing import List, Optional
 
 
 class ChatMessageRequest(BaseModel):
+    user_id: str
+    user_message: str
     book_id: str
+    
     
 class ChatMessageResponse(BaseModel):
     status: str
@@ -17,6 +20,7 @@ class MusicItem(BaseModel):
     artist: str
     
 class ChapterEndAIRequest(BaseModel): # 챕터 끝 request!
+    user_id: str
     book_id: str
 
 
