@@ -1,9 +1,6 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends
 # 회원 가입
-#<<<<<<< HEAD
 from app.schemas.user_schema import UserCreate, UserCreateResponse
-# from app.redis.queue import queue
-#>>>>>>> main
 from app.services.user_service import create_user
 # 로그인
 from app.schemas.user_schema import UserLoginRequest, UserLoginResponse
@@ -20,9 +17,6 @@ async def register(user: UserCreate):
     # 1. 이미 존재하는 ID 체크
     if get_user_by_id(user.user_id):
         raise HTTPException(status_code=403, detail="이미 존재하는 ID입니다.")
-#<<<<<<< HEAD
-#=======
-
     # 2. 바로 회원가입 처리 (동기/비동기)
     try:
         create_user(user.user_id, user.name, user.password)
@@ -36,16 +30,11 @@ async def register(user: UserCreate):
         user_id=user.user_id,
         message="회원 가입이 완료되었습니다."
     )
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> acf28c1ecd45dab115345b664094d4905aa4609e
 
-    # 2. 바로 회원가입 처리 (동기/비동기)
-    try:
-        create_user(user.user_id, user.name, user.password)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"회원 가입 실패: {str(e)}")
-
-    # 3. 성공 응답
-    return {"message": "회원 가입 완료"}
 
 @router.post("/login", response_model=UserLoginResponse)
 async def login(user: UserLoginRequest, response: Response):
