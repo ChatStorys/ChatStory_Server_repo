@@ -5,9 +5,7 @@ app.fastapi()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://localhost:5173",
-        "http://localhost:5173"],
+    aallow_origins=[frontend_origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
