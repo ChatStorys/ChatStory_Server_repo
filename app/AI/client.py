@@ -1,30 +1,27 @@
-# app/ai/client.py
+import os
 import httpx
 from app.AI.schemas import ChatMessageRequest, ChatMessageResponse
-from app.core.config import settings  # .env에서 AI_SERVER_URL 불러올 예정
 from app.schemas.story_schema import ChapterEndAIRequest, ChapterEndAIResponse
-# from  import handle_story_continue, handle_chapter_summary_with_music
 
-# AI 서버 코드 불러오기
-def send_message_to_ai_server(data: ChatMessageRequest) -> ChatMessageResponse:
-    result_text: str = handle_story_continue(
-        user_id=data.user_id,
-        message=data.message,
-        book_id=data.book_id
-    )
-    
-    return ChatMessageResponse(response= result_text)
+HF_API_URL = "https://api-inference.huggingface.co/models/Jinuuuu/KoELECTRA_fine_tunning_emotion"
+HF_TOKEN = os.getenv("HF_TOKEN")
 
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}"
+}
 
-def send_chapter_end_to_ai(data: ChapterEndAIRequest) -> ChapterEndAIResponse:
-    summary, music = handle_chapter_summary_with_music(
-        summary= data.summary,
-        recommended_music= [
-            {
-            title: str,
-            artist: str
-            }
-        ]
-    )
-    return ChapterEndAIResponse(summary=summary, music_rcommendation=music)
-
+async def send_message_to_ai_server(data: ChatMessageRequest) -> ChatMessageResponse:
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            HF_API_URL,
+            headers=headers,
+            json={"inputs": data.message}
+        )
+        if response.status_code != 200:
+            raise Exception(f"Hugging Face API error: {response.status_code}, {response.text}")
+        
+        output = response.json()
+        
+        # Hugging Face 감정분석 모델은 [{"label": "LABEL", "score": float}] 형식으로 반환함
+        emotion = output[0]["label"] if isinstance(output, list) else "Unknown"
+        return ChatMessageResponse(message=emotion)
