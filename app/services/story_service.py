@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from app.db.mongo import db
 # from app.AI.schemas import StorySaveRequest
 from app.schemas.story_schema import (
-    ChapterEndAIRequest, ChapterEndAIResponse, 
     StoryCreateRequest, FinishStoryRequest,
     ArchiveItemResponse, StoryContentResponse
 )
@@ -57,23 +56,11 @@ def get_creating_story(user_id: str):
         "workingFlag": True
     })
 
-# def save_user_message(user_id, req):
-#     """
-#     사용자가 보낸 채팅 메시지를 DB에 저장
-#     """
-#     chat_doc = {
-#         "user_id": user_id,
-#         "book_id": req.book_id,
-#         "message": req.message,
-#     }
-#     result = db.chat_messages.insert_one(chat_doc)
-#     return str(result.inserted_id)
-
-def end_chapter(book_id: str, req: ChapterEndAIRequest) -> ChapterEndAIResponse:
-    # ai에 요청
-    ai_resp = send_chapter_end_to_ai(book_id, req)
-    # DB에 저장할 필요 없음
-    return ai_resp
+# def end_chapter(book_id: str, req: ChapterEndAIRequest) -> ChapterEndAIResponse:
+#     # ai에 요청
+#     ai_resp = send_chapter_end_to_ai(book_id, req)
+#     # DB에 저장할 필요 없음
+#     return ai_resp
     
 def finish_story(user_id: str, book_id: str) -> bool:
     """

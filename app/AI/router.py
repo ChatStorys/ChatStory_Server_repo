@@ -1,9 +1,14 @@
-from fastapi import APIRouter, HTTPException
-from app.AI.schemas import ChatMessageRequest, ChatMessageResponse
-from app.AI.client import send_message_to_ai_server
+from fastapi import APIRouter, HTTPException, Depends, status
+from app.AI.schemas import (
+    ChatMessageRequest, ChatMessageResponse,
+    ChapterEndAIRequest, ChapterEndAIResponse
+)
+from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
+from app.api.v1.routers.story import get_current_user
 
 router = APIRouter()
 
+<<<<<<< HEAD
 @router.post("/save", response_model=ChatMessageResponse)
 async def chat_story_write(request: ChatMessageRequest):
     try:
@@ -11,3 +16,45 @@ async def chat_story_write(request: ChatMessageRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"서버 통신 실패: {str(e)}")
+=======
+@router.post("/save", 
+        response_model=ChatMessageResponse,
+        summary="사용자 메시지를 AI 서버로 전달, AI는 내용 생성하고 사용자 내용+ai 생성 내용 저장"
+)
+def chat_story_write(
+    req: ChatMessageRequest,
+    user_id: str = Depends(get_current_user),
+):
+    try:
+        result = send_message_to_ai_server(req)
+        return result
+    except Exception as e:
+        print("send_message_to_ai_server 에러:", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI 처리 중 오류가 발생했습니다: {e}"
+        )
+
+# 챕터 끝내기
+@router.post(
+    "/chapter/end",
+    response_model=ChapterEndAIResponse,
+    summary="챕터 종료 요청을 AI 서버로 전달"
+)
+def chapter_end(
+    req: ChapterEndAIRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """
+    챕터 종료 시 AI 서버에 요약 및 음악 추천 요청을 포워딩합니다.
+    서버에서는 별도 저장을 수행하지 않습니다.
+    """
+    try:
+        return send_chapter_end_to_ai(req)
+    except Exception as e:
+        print("send_chapter_end_to_ai 에러:", e)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI 처리 중 오류가 발생했습니다. {e}"
+        )
+>>>>>>> 1e8b4ea (AI merge function implemented)

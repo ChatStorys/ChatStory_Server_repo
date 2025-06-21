@@ -46,7 +46,7 @@ async def login(user: UserLoginRequest, response: Response):
     access_token = create_access_token(data={"sub": user.user_id})
     
     # 1. 응답 헤더에 Authorization 추가
-    # response.headers["Authorization"] = f"Bearer {access_token}"
+    response.headers["Authorization"] = f"Bearer {access_token}"
     
     # token type bearer -> 이 토큰을 가진 사람은 인증된 사용자로 간주 
     # bearer: 소지자(bearer)가 토큰의 권한을 가진다 => http-only 쿠키를 사용할 때는 bearer 필요 x
