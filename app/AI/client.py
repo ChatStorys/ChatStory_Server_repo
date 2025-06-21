@@ -4,10 +4,10 @@ from app.AI.schemas import ChatMessageRequest, ChatMessageResponse
 from app.schemas.story_schema import ChapterEndAIRequest, ChapterEndAIResponse
 
 HF_API_URL = "https://api-inference.huggingface.co/models/Jinuuuu/KoELECTRA_fine_tunning_emotion"
-HF_TOKEN = os.getenv("HF_TOKEN")
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
 headers = {
-    "Authorization": f"Bearer {HF_TOKEN}"
+    "Authorization": f"Bearer {HF_API_TOKEN}"
 }
 
 async def send_message_to_ai_server(data: ChatMessageRequest) -> ChatMessageResponse:
