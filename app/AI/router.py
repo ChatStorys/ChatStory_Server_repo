@@ -8,15 +8,6 @@ from app.api.v1.routers.story import get_current_user
 
 router = APIRouter()
 
-<<<<<<< HEAD
-@router.post("/save", response_model=ChatMessageResponse)
-async def chat_story_write(request: ChatMessageRequest):
-    try:
-        result = await send_message_to_ai_server(request)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"서버 통신 실패: {str(e)}")
-=======
 @router.post("/save", 
         response_model=ChatMessageResponse,
         summary="사용자 메시지를 AI 서버로 전달, AI는 내용 생성하고 사용자 내용+ai 생성 내용 저장"
@@ -57,4 +48,3 @@ def chapter_end(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"AI 처리 중 오류가 발생했습니다. {e}"
         )
->>>>>>> 1e8b4ea (AI merge function implemented)
