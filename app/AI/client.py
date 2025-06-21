@@ -23,7 +23,7 @@ def send_message_to_ai_server(data: ChatMessageRequest) -> ChatMessageResponse:
         "book_id":      data.book_id
     }
 
-    url = f"{HF_API_URL}/generate-chapter"
+    url = f"{HF_API_URL}/story/continue"
     with httpx.Client(timeout=60.0) as client:
         resp = client.post(url, headers=headers, json=payload)
         resp.raise_for_status()
@@ -37,7 +37,7 @@ def send_chapter_end_to_ai(req: ChapterEndAIRequest) -> ChapterEndAIResponse:
     """
     챕터 종료 시 AI에 본문을 보내 요약과 음악 추천을 받아옴
     """
-    url = f"{HF_API_URL}/finish-chapter"
+    url = f"{HF_API_URL}/story/chapter/summary_with_music"
     payload = {
         "user_id": req.user_id,
         "book_id": req.book_id
