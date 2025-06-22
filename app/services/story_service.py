@@ -37,7 +37,7 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
     book_id = f"book{seq:03d}"
     
     # 소설 생성
-    result = db.Book.insert_one({
+    insert_in_Book = db.Book.insert_one({
         "title": request.title,
         "genre": request.category,
         "userId": user_id,
@@ -45,6 +45,24 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
         "workingFlag": True # 현재 작성 중인 챕터를 나타내는 Flag
         # 챕터 기록 뿐만 아니라 소설의 새로 쓰기, 이어 쓰기 중 하나를 택함
     })
+    
+    insert_in_Chapter = db.Chapter.insert_one({
+        "chapter_Num": 1,
+        "userId": user_id,
+        "sumChapter": "",
+        "workingFlag" : True,
+        "musicTitle": "",
+        "composer": ""
+    })
+    
+    insert_in_ChatStorage = db.ChatStorage.insert_one({
+        "userId": user_id,
+        "chapter_Num": 1,         
+        "content": [
+            { "LLM_Model": "", "User": "" }
+            ]
+    })
+    
     return book_id
 
 def get_creating_story(user_id: str):
