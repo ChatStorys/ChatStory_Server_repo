@@ -2,12 +2,13 @@ from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.schemas.story_schema import (
     StoryCreateRequest, StoryCreateResponse,
+    FrontChatRequest, FrontChatResponse,
     FinishStoryRequest, FinishStoryResponse, 
     ArchiveItemResponse, StoryContentResponse, DeleteResponse
 )
 from app.services.story_service import (
     get_creating_story, create_story,
-    finish_story, 
+    finish_story, send_front_chat,
     list_archived_stories,
     get_story_content, delete_story
 )
@@ -93,6 +94,27 @@ async def create_story_router(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="서버 오류로 소설 생성에 실패했습니다."
         )
+        
+@router.post(
+    "/send",
+    response_model=FrontChatResponse,
+    status_code=status.HTTP_200_OK,
+    summary="프론트 -> AI 채팅 중계",
+)
+async def front_chat(
+    req: FrontChatRequest,
+    current_user = Depends(get_current_user),
+):
+    try:
+        result = send_front_chat(
+            user_id=current_user.id,
+            book_id=req.book_id,
+            prompt=req.prompt
+        )
+        return result
+    
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"{e}")
 
 # 소설 끝내기
 @router.post(
