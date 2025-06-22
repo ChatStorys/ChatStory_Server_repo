@@ -1,6 +1,6 @@
 from typing import Dict
 from dotenv import load_dotenv
-import traceback, logging
+# import traceback, logging
 # 프로젝트 내부 모듈 임포트 (Hugging Face 버전)
 from app.AI.api.gpt_client import GPTClient
 from app.AI.database.db_manager import DatabaseManager
@@ -422,7 +422,7 @@ def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict
         return result
         
     except Exception as e:
-        logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
+        # logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
         return {
             "status": "fail",
             "code": 500,
