@@ -4,6 +4,10 @@ from app.api.v1.routers import auth, story
 from app.AI import router
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from app.AI.schemas import (
+    ChatMessageRequest, ChatMessageResponse,
+    ChapterEndAIRequest, ChapterEndAIResponse
+)
 
 load_dotenv()
 
@@ -19,7 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(router.router, prefix="/ai", tags=["AI"])
+app.include_router(router.ai_router, prefix="/ai", tags=["AI"])
 app.include_router(story.router, prefix="/story", tags=["Stories"])
 
 # app.include_router(ai_router.router, prefix="/ai", tags=["AI ChatStory"])
@@ -31,3 +35,4 @@ app.include_router(story.router, prefix="/story", tags=["Stories"])
 @app.get("/")
 def root():
     return {"message": "Welcome to ChatStory API!"}
+
