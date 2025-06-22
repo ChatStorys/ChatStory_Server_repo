@@ -214,44 +214,32 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "summary": f"{e}",
-                    "recommended_music": [{
-                        "title": selected_music.get('musicTitle'),
-                        "artist": selected_music.get('composer')
-                    }]
+                    "summary": "챕터 정보를 찾을 수 없습니다.",
+                    "recommended_music": []
                 }
-            
             chapter_num = current_chapter.get('chapter_info', {}).get('chapter_Num', '')
             if not chapter_num:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "summary": f"{e}",
-                    "recommended_music": [{
-                        "title": selected_music.get('musicTitle'),
-                        "artist": selected_music.get('composer')
-                    }]
+                    "summary": "챕터 번호를 찾을 수 없습니다.",
+                    "recommended_music": []
                 }
             
             # 2. 챕터의 채팅 내용을 하나의 연속된 텍스트로 변환
             chat_contents = current_chapter.get('chat_contents', [])
             chapter_content_text = ""
-            
             for chat in chat_contents:
                 if "User" in chat:
                     chapter_content_text += f"사용자: {chat['User']}\n"
                 if "LLM_Model" in chat:
                     chapter_content_text += f"AI: {chat['LLM_Model']}\n"
-            
             if not chapter_content_text.strip():
                 return {
                     "status": "fail",
                     "code": 500,
-                    "summary": f"{e}",
-                    "recommended_music": [{
-                        "title": selected_music.get('musicTitle'),
-                        "artist": selected_music.get('composer')
-                    }]
+                    "summary": "챕터 내용이 비어 있습니다.",
+                    "recommended_music": []
                 }
             
             # 3. GPT를 통한 챕터 요약 생성
@@ -260,12 +248,12 @@ class NovelProcessor:
                     content=chapter_content_text,
                     chapter_num=chapter_num
                 )
-                
             except Exception as e:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"텍스트 추천 실패 (CODE 500) {e}"
+                    "summary": f"텍스트 요약 실패: {e}",
+                    "recommended_music": []
                 }
             
             # 4. 챕터 요약 정보 업데이트
@@ -276,30 +264,24 @@ class NovelProcessor:
                     chapter_num=chapter_num,
                     summary=chapter_summary
                 )
-                
             except Exception as e:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"텍스트 추천 실패 (CODE 500){e}"
+                    "summary": f"챕터 요약 DB 저장 실패: {e}",
+                    "recommended_music": []
                 }
             
             # 5. Algorithm 1을 사용한 음악 추천 (Hugging Face 모델)
             try:
-                # Algorithm 1: recommend_music에서 클래스 내부의 db_manager를 통해 음악 데이터베이스 조회 및 추천 처리
-                # 긴 텍스트 처리 기능 활용을 위해 전체 챕터 내용 사용 (요약 아님)
                 recommendations = self.music_recommender.recommend_music(
                     userID=user_id,
-                    novelContents=chapter_content_text,  # 전체 챕터 내용 사용 (긴 텍스트 처리 활용)
-                    musicDB=None,  # None으로 설정하여 내부에서 db_manager를 통해 조회
-                    N=1  # 챕터당 하나의 음악 추천
+                    novelContents=chapter_content_text,
+                    musicDB=None,
+                    N=1
                 )
-                
                 if recommendations and len(recommendations) > 0:
-                    # 가장 유사도가 높은 음악 선택
                     selected_music = recommendations[0]
-                    
-                    # 6. 챕터에 음악 정보 저장 및 완료 처리
                     try:
                         self.db_manager.update_chapter_music(
                             user_id=user_id,
@@ -310,18 +292,14 @@ class NovelProcessor:
                                 "composer": selected_music.get('artist')
                             }
                         )
-                        
-                        # 챕터 완료 처리 (workingFlag를 False로 변경)
-                        # server에서 처리
                         # self.db_manager.complete_chapter(book_id, chapter_num)
-                        
                     except Exception as e:
                         return {
                             "status": "fail",
                             "code": 500,
-                            "message": f"텍스트 추천 실패 (CODE 500) {e}"
+                            "summary": f"음악 정보 저장 실패: {e}",
+                            "recommended_music": []
                         }
-                    
                     return {
                         "status": "success",
                         "code": 200,
@@ -332,33 +310,20 @@ class NovelProcessor:
                         }]
                     }
                 else:
-                    # 추천 결과가 없는 경우
                     return {
                         "status": "fail",
                         "code": 500,
-                        "summary": f"{e}",
-                        "recommended_music": [{
-                            "title": selected_music.get('musicTitle'),
-                            "artist": selected_music.get('composer')
-                        }]
+                        "summary": "음악 추천 결과가 없습니다.",
+                        "recommended_music": []
                     }
-                    
             except Exception as e:
                 print(f"Algorithm 1 음악 추천 오류: {str(e)}")
-                
-                # 대안: 기존 방식으로 폴백
                 try:
-                    # KoELECTRA 모델을 이용한 감정 분석 (폴백) - 전체 챕터 내용 사용
                     emotions = self.emotion_analyzer.analyze_emotions(chapter_content_text)
                     dominant_emotion = emotions.get('dominant_emotion', 'happy')
-                    
-                    # 주요 감정에 기반한 음악 추천 (기존 방식)
                     music_list = self.db_manager.get_music_by_emotion(dominant_emotion)
-                    
                     if music_list:
                         selected_music = music_list[0]
-                        
-                        # 챕터에 음악 정보 저장하고 완료 처리
                         self.db_manager.update_chapter_music(
                             user_id=user_id,
                             book_id=book_id,
@@ -368,9 +333,7 @@ class NovelProcessor:
                                 "composer": selected_music.get('composer'),
                             }
                         )
-                        
                         self.db_manager.complete_chapter(book_id, chapter_num)
-                        
                         return {
                             "status": "success",
                             "code": 200,
@@ -381,31 +344,26 @@ class NovelProcessor:
                             }]
                         }
                     else:
-                        # 음악을 찾을 수 없는 경우에도 요약은 저장하고 완료 처리
                         self.db_manager.complete_chapter(book_id, chapter_num)
-                        
                         return {
                             "status": "fail",
                             "code": 500,
-                            "summary": f"{e}",
-                            "recommended_music": [{
-                                "title": selected_music.get('musicTitle'),
-                                "artist": selected_music.get('composer')
-                            }]
+                            "summary": "감정 기반 음악 추천 결과가 없습니다.",
+                            "recommended_music": []
                         }
-                        
                 except Exception as fallback_error:
                     return {
                         "status": "fail",
                         "code": 500,
-                        "message": f"텍스트 추천 실패 (CODE 500) {e}"
+                        "summary": f"음악 추천 폴백 실패: {fallback_error}",
+                        "recommended_music": []
                     }
-            
         except Exception as e:
             return {
                 "status": "fail",
                 "code": 500,
-                "message": f"텍스트 추천 실패 (CODE 500) {e}"
+                "summary": f"알 수 없는 오류: {e}",
+                "recommended_music": []
             }
 
 # 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
@@ -471,10 +429,10 @@ def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
             book_id=book_id
         )
         return result
-        
     except Exception as e:
         return {
             "status": "fail",
             "code": 500,
-            "message": "텍스트 추천 실패 (CODE 500)"
+            "summary": f"알 수 없는 오류: {e}",
+            "recommended_music": []
         }
