@@ -35,4 +35,12 @@ app.include_router(story.router, prefix="/story", tags=["Stories"])
 @app.get("/")
 def root():
     return {"message": "Welcome to ChatStory API!"}
+@app.get("/")
+def root():
+    return {"message": "Welcome to ChatStory API!"}
+
+
+@app.api_route("/{path:path}", methods=["CONNECT"])
+async def block_connect(request: Request):
+    return PlainTextResponse("CONNECT method not allowed", status_code=405)
 
