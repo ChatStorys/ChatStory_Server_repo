@@ -342,7 +342,7 @@ class NovelProcessor:
                 "prompt": None
             }
 
-    def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
+    def handle_chapter_summary_with_music(self, user_id: str, book_id: str) -> Dict:
         """
         챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
         
