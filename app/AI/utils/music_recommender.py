@@ -247,18 +247,9 @@ class MusicRecommender:
         # 8. return similarity
         return float(similarity)
 
-    def recommend_music(
-        self,
-        userID: str,
-        novelContents: str,
-        musicDB: List[Dict] = None,
-        N: int = 5,
-        db_manager=None
-    ) -> List[Dict]:
-    """
-    Algorithm 1: 소설 내용 기반 음악 추천
-    """
-    # 1) 전체를 감싸는 try/except
+    def recommend_music(self, userID: str,novelContents: str, musicDB: List[Dict] = None, N: int = 5, db_manager=None) -> List[Dict]:
+        """Algorithm 1: 소설 내용 기반 음악 추천"""
+        # 1) 전체를 감싸는 try/except
         try:
             # 2) 특징 추출 단계
             try:
@@ -314,7 +305,7 @@ class MusicRecommender:
             except Exception as e:
                 logging.error("정렬/결과 추출 실패:\n%s", traceback.format_exc())
                 raise RuntimeError(f"결과 처리 오류: {e}")
-
+            
         except Exception as e:
             # 최종 오류 핸들링: 빈 리스트 반환
             logging.error("음악 추천 전체 실패: %s", e)
