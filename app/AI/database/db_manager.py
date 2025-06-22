@@ -332,3 +332,14 @@ class DatabaseManager:
             return user
         except Exception as e:
             raise Exception(f"Error getting user: {str(e)}")
+        
+    def get_book_info(self, book_id: str) -> Optional[Dict]:
+        """
+        Book Collection에서 bookId로 책 정보를 조회한다.
+        반환값은 _id를 제외한 책의 모든 필드이다.
+        """
+        try:
+            book = self.books.find_one({"bookId": book_id}, {"_id": 0})
+            return book
+        except Exception as e:
+            raise Exception(f"Error getting book info: {str(e)}")
