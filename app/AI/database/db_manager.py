@@ -326,8 +326,7 @@ class DatabaseManager:
         """
         try:
             user = self.users.find_one(
-                {"userId": user_id},
-                {"_id": 0}
+                {"userId": user_id}
             )
             return user
         except Exception as e:
