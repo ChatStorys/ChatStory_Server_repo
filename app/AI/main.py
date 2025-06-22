@@ -214,7 +214,11 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": "텍스트 추천 실패 (CODE 500)"
+                    "summary": f"{e}",
+                    "recommended_music": [{
+                        "title": selected_music.get('musicTitle'),
+                        "artist": selected_music.get('composer')
+                    }]
                 }
             
             chapter_num = current_chapter.get('chapter_info', {}).get('chapter_Num', '')
@@ -222,7 +226,11 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": "텍스트 추천 실패 (CODE 500)"
+                    "summary": f"{e}",
+                    "recommended_music": [{
+                        "title": selected_music.get('musicTitle'),
+                        "artist": selected_music.get('composer')
+                    }]
                 }
             
             # 2. 챕터의 채팅 내용을 하나의 연속된 텍스트로 변환
@@ -239,7 +247,11 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": "텍스트 추천 실패 (CODE 500)"
+                    "summary": f"{e}",
+                    "recommended_music": [{
+                        "title": selected_music.get('musicTitle'),
+                        "artist": selected_music.get('composer')
+                    }]
                 }
             
             # 3. GPT를 통한 챕터 요약 생성
@@ -324,7 +336,11 @@ class NovelProcessor:
                     return {
                         "status": "fail",
                         "code": 500,
-                        "message": "텍스트 추천 실패 (CODE 500)"
+                        "summary": f"{e}",
+                        "recommended_music": [{
+                            "title": selected_music.get('musicTitle'),
+                            "artist": selected_music.get('composer')
+                        }]
                     }
                     
             except Exception as e:
@@ -371,7 +387,11 @@ class NovelProcessor:
                         return {
                             "status": "fail",
                             "code": 500,
-                            "message": "텍스트 추천 실패 (CODE 500)"
+                            "summary": f"{e}",
+                            "recommended_music": [{
+                                "title": selected_music.get('musicTitle'),
+                                "artist": selected_music.get('composer')
+                            }]
                         }
                         
                 except Exception as fallback_error:
