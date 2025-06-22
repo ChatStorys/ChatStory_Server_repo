@@ -49,6 +49,7 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
     insert_in_Chapter = db.Chapter.insert_one({
         "chapter_Num": 1,
         "userId": user_id,
+        "bookId": book_id,
         "sumChapter": "",
         "workingFlag" : True,
         "musicTitle": "",
@@ -57,7 +58,8 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
     
     insert_in_ChatStorage = db.ChatStorage.insert_one({
         "userId": user_id,
-        "chapter_Num": 1,         
+        "chapter_Num": 1,        
+        "bookId": book_id, 
         "content": [
             { "LLM_Model": "", "User": "" }
             ]
@@ -116,6 +118,7 @@ def finish_story(user_id: str, book_id: str) -> bool:
         {"_id": last_chap["_id"]},
         {"$inc": {"chapter_Num": -1}}
     )
+
     
     return result.modified_count == 1
 
@@ -165,6 +168,9 @@ def get_story_content(user_id: str, book_id: str) :
         except Exception:
             kst = timezone(timedelta(hours=9))
             created_at = datetime.now(kst)
+
+    # ChatStorage 안에 있는 모든 chapter의 content들 이어붙여 한 번에 보내기
+    # (List로, 기존에는 LLM Model, User 순으로 구현 되어있었으나 순서 User, LLM Model로 바꿔줄 것)
 
     return StoryContentResponse(
         bookId=doc.get("bookId"),
