@@ -500,7 +500,7 @@ def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
         return {
             "status": "fail",
             "code": 500,
-            "message": f"finish_chapter_and_recommend_music 에러: {e}"
+            "message": f"finish_chapter_and_recommend_music 에러: {e}",
             "summary": "",
             "recommanded_music": [],  # 비어있는 리스트
         }
