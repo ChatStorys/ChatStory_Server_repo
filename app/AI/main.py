@@ -181,192 +181,192 @@ class NovelProcessor:
                 "prompt": None
             }
 
-def finish_chapter_and_recommend_music(self, user_id: str, book_id: str) -> Dict:
-    try:
-        print(f"[HF 모델] 챕터 완료 및 음악 추천 시작 - 사용자: {user_id}, 책: {book_id}")
-
-        # 1. book_id로 현재 작업 중인 챕터 조회
+    def finish_chapter_and_recommend_music(self, user_id: str, book_id: str) -> Dict:
         try:
-            current_chapter = self.db_manager.get_current_chapter_contents(book_id=book_id)
-            if not current_chapter:
-                raise ValueError(f"book_id='{book_id}'에 해당하는 작업 중인 챕터를 찾을 수 없습니다.")
-        except Exception as e:
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": str(e)
-            }
+            print(f"[HF 모델] 챕터 완료 및 음악 추천 시작 - 사용자: {user_id}, 책: {book_id}")
 
-        # 2. 챕터 번호 가져오기
-        try:
-            chapter_num = current_chapter['chapter_info']['chapter_Num']
-            if not chapter_num:
-                raise ValueError(f"chapter_info.chapter_Num 값이 비어 있습니다: {current_chapter}")
-        except Exception as e:
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": str(e)
-            }
-
-        # 3. 채팅내용 텍스트화
-        chat_contents = current_chapter.get('chat_contents', [])
-        chapter_content_text = "\n".join(
-            f"사용자: {c['User']}" if 'User' in c else f"AI: {c['LLM_Model']}"
-            for c in chat_contents
-        ).strip()
-        if not chapter_content_text:
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": f"챕터({chapter_num})에 텍스트가 존재하지 않습니다."
-            }
-
-        # 4. 요약 생성
-        try:
-            chapter_summary = self.gpt_client.summarize_chapter(
-                content=chapter_content_text,
-                chapter_num=chapter_num
-            )
-        except Exception as e:
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": f"요약 생성 실패: {e}"
-            }
-
-        # 5. 요약 저장
-        try:
-            self.db_manager.update_chapter_summary(
-                user_id=user_id,
-                book_id=book_id,
-                chapter_num=chapter_num,
-                summary=chapter_summary
-            )
-        except Exception as e:
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": f"요약 저장 실패: {e}"
-            }
-
-        # 6. 음악 추천 (Algorithm 1)
-        try:
-            recommendations = self.music_recommender.recommend_music(
-                userID=user_id,
-                novelContents=chapter_content_text,
-                musicDB=None,
-                N=1
-            )
-            if not recommendations:
-                raise ValueError("음악 추천 결과가 없습니다.")
-            selected = recommendations[0]
-            self.db_manager.update_chapter_music(
-                user_id=user_id,
-                book_id=book_id,
-                chapter_num=chapter_num,
-                music_data={
-                    "musicTitle": selected.get('songName'),
-                    "composer": selected.get('artist')
+            # 1. book_id로 현재 작업 중인 챕터 조회
+            try:
+                current_chapter = self.db_manager.get_current_chapter_contents(book_id=book_id)
+                if not current_chapter:
+                    raise ValueError(f"book_id='{book_id}'에 해당하는 작업 중인 챕터를 찾을 수 없습니다.")
+            except Exception as e:
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": str(e)
                 }
-            )
-            # workingFlag=False 처리도 여기서 호출
-            return {
-                "status": "success",
-                "code": 200,
-                "summary": chapter_summary,
-                "recommended_music": [{
-                    "title": selected.get('songName'),
-                    "artist": selected.get('artist')
-                }]
-            }
+
+            # 2. 챕터 번호 가져오기
+            try:
+                chapter_num = current_chapter['chapter_info']['chapter_Num']
+                if not chapter_num:
+                    raise ValueError(f"chapter_info.chapter_Num 값이 비어 있습니다: {current_chapter}")
+            except Exception as e:
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": str(e)
+                }
+
+            # 3. 채팅내용 텍스트화
+            chat_contents = current_chapter.get('chat_contents', [])
+            chapter_content_text = "\n".join(
+                f"사용자: {c['User']}" if 'User' in c else f"AI: {c['LLM_Model']}"
+                for c in chat_contents
+            ).strip()
+            if not chapter_content_text:
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": f"챕터({chapter_num})에 텍스트가 존재하지 않습니다."
+                }
+
+            # 4. 요약 생성
+            try:
+                chapter_summary = self.gpt_client.summarize_chapter(
+                    content=chapter_content_text,
+                    chapter_num=chapter_num
+                )
+            except Exception as e:
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": f"요약 생성 실패: {e}"
+                }
+
+            # 5. 요약 저장
+            try:
+                self.db_manager.update_chapter_summary(
+                    user_id=user_id,
+                    book_id=book_id,
+                    chapter_num=chapter_num,
+                    summary=chapter_summary
+                )
+            except Exception as e:
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": f"요약 저장 실패: {e}"
+                }
+
+            # 6. 음악 추천 (Algorithm 1)
+            try:
+                recommendations = self.music_recommender.recommend_music(
+                    userID=user_id,
+                    novelContents=chapter_content_text,
+                    musicDB=None,
+                    N=1
+                )
+                if not recommendations:
+                    raise ValueError("음악 추천 결과가 없습니다.")
+                selected = recommendations[0]
+                self.db_manager.update_chapter_music(
+                    user_id=user_id,
+                    book_id=book_id,
+                    chapter_num=chapter_num,
+                    music_data={
+                        "musicTitle": selected.get('songName'),
+                        "composer": selected.get('artist')
+                    }
+                )
+                # workingFlag=False 처리도 여기서 호출
+                return {
+                    "status": "success",
+                    "code": 200,
+                    "summary": chapter_summary,
+                    "recommended_music": [{
+                        "title": selected.get('songName'),
+                        "artist": selected.get('artist')
+                    }]
+                }
+
+            except Exception as e:
+                # Algorithm 1 실패 시 폴백 로직
+                print(f"Algorithm 1 오류: {e}")
+                # … (폴백 로직 생략) …
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": f"음악 추천 실패: {e}"
+                }
 
         except Exception as e:
-            # Algorithm 1 실패 시 폴백 로직
-            print(f"Algorithm 1 오류: {e}")
-            # … (폴백 로직 생략) …
+            # 의도치 않은 최상위 예외 캐치
             return {
                 "status": "fail",
                 "code": 500,
-                "message": f"음악 추천 실패: {e}"
+                "message": f"알 수 없는 오류: {e}"
             }
 
-    except Exception as e:
-        # 의도치 않은 최상위 예외 캐치
-        return {
-            "status": "fail",
-            "code": 500,
-            "message": f"알 수 없는 오류: {e}"
-        }
 
+    # 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
+    novel_processor = None
 
-# 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
-novel_processor = None
+    def get_novel_processor():
+        """NovelProcessor 인스턴스 반환 (지연 초기화)"""
+        global novel_processor
+        if novel_processor is None:
+            novel_processor = NovelProcessor()
+        return novel_processor
 
-def get_novel_processor():
-    """NovelProcessor 인스턴스 반환 (지연 초기화)"""
-    global novel_processor
-    if novel_processor is None:
-        novel_processor = NovelProcessor()
-    return novel_processor
-
-def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict:
-    """
-    소설 계속 쓰기 요청 처리 함수 (Hugging Face 모델 버전)
-    
-    외부 서버에서 호출할 수 있는 함수입니다.
-    /story/continue 엔드포인트의 요청을 처리합니다.
-    
-    매개변수:
-        user_id: 사용자 ID
-        user_message: 사용자 메시지
-        book_id: 책 ID
+    def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict:
+        """
+        소설 계속 쓰기 요청 처리 함수 (Hugging Face 모델 버전)
         
-    반환값:
-        처리 결과 딕셔너리
-    """
-    try:
-        result = get_novel_processor().generate_chapter(
-            user_id=user_id,
-            user_message=user_message,
-            book_id=book_id
-        )
-        return result
+        외부 서버에서 호출할 수 있는 함수입니다.
+        /story/continue 엔드포인트의 요청을 처리합니다.
         
-    except Exception as e:
-        # logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
-        return {
-            "status": "fail",
-            "code": 500,
-            "message": f"소설 저장 중 오류가 발생했습니다 {e}",
-            "prompt": None
-        }
+        매개변수:
+            user_id: 사용자 ID
+            user_message: 사용자 메시지
+            book_id: 책 ID
+            
+        반환값:
+            처리 결과 딕셔너리
+        """
+        try:
+            result = get_novel_processor().generate_chapter(
+                user_id=user_id,
+                user_message=user_message,
+                book_id=book_id
+            )
+            return result
+            
+        except Exception as e:
+            # logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
+            return {
+                "status": "fail",
+                "code": 500,
+                "message": f"소설 저장 중 오류가 발생했습니다 {e}",
+                "prompt": None
+            }
 
-def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
-    """
-    챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
-    
-    외부 서버에서 호출할 수 있는 함수입니다.
-    /story/chapter/summary_with_music 엔드포인트의 요청을 처리합니다.
-    현재 작업 중인 챕터(workingFlag=True)를 찾아 요약을 생성하고 음악을 추천합니다.
-    
-    매개변수:
-        user_id: 사용자 ID
-        book_id: 책 ID
+    def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
+        """
+        챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
         
-    반환값:
-        처리 결과 딕셔너리
-    """
-    try:
-        result = get_novel_processor().finish_chapter_and_recommend_music(
-            user_id=user_id,
-            book_id=book_id
-        )
-        return result
-    except Exception as e:
-        return {
-            "status": "fail",
-            "code": 500,
-            "summary": f"알 수 없는 오류: {e}",
-            "recommended_music": []
-        }
+        외부 서버에서 호출할 수 있는 함수입니다.
+        /story/chapter/summary_with_music 엔드포인트의 요청을 처리합니다.
+        현재 작업 중인 챕터(workingFlag=True)를 찾아 요약을 생성하고 음악을 추천합니다.
+        
+        매개변수:
+            user_id: 사용자 ID
+            book_id: 책 ID
+            
+        반환값:
+            처리 결과 딕셔너리
+        """
+        try:
+            result = get_novel_processor().finish_chapter_and_recommend_music(
+                user_id=user_id,
+                book_id=book_id
+            )
+            return result
+        except Exception as e:
+            return {
+                "status": "fail",
+                "code": 500,
+                "summary": f"알 수 없는 오류: {e}",
+                "recommended_music": []
+            }
