@@ -103,11 +103,11 @@ async def create_story_router(
 )
 async def front_chat(
     req: FrontChatRequest,
-    current_user = Depends(get_current_user),
+    current_user: str = Depends(get_current_user),
 ):
     try:
         result = send_front_chat(
-            user_id=current_user.id,
+            user_id=current_user,
             book_id=req.book_id,
             prompt=req.prompt
         )
