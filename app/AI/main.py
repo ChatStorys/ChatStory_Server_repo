@@ -253,7 +253,7 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": "텍스트 추천 실패 (CODE 500)"
+                    "message": f"텍스트 추천 실패 (CODE 500) {e}"
                 }
             
             # 4. 챕터 요약 정보 업데이트
@@ -269,7 +269,7 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": "텍스트 추천 실패 (CODE 500)"
+                    "message": f"텍스트 추천 실패 (CODE 500){e}"
                 }
             
             # 5. Algorithm 1을 사용한 음악 추천 (Hugging Face 모델)
@@ -307,7 +307,7 @@ class NovelProcessor:
                         return {
                             "status": "fail",
                             "code": 500,
-                            "message": "텍스트 추천 실패 (CODE 500)"
+                            "message": f"텍스트 추천 실패 (CODE 500) {e}"
                         }
                     
                     return {
@@ -378,14 +378,14 @@ class NovelProcessor:
                     return {
                         "status": "fail",
                         "code": 500,
-                        "message": "텍스트 추천 실패 (CODE 500)"
+                        "message": f"텍스트 추천 실패 (CODE 500) {e}"
                     }
             
         except Exception as e:
             return {
                 "status": "fail",
                 "code": 500,
-                "message": "텍스트 추천 실패 (CODE 500)"
+                "message": f"텍스트 추천 실패 (CODE 500) {e}"
             }
 
 # 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
@@ -426,7 +426,7 @@ def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict
         return {
             "status": "fail",
             "code": 500,
-            "message": "소설 저장 중 오류가 발생했습니다",
+            "message": f"소설 저장 중 오류가 발생했습니다 {e}",
             "prompt": None
         }
 
@@ -500,6 +500,7 @@ def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
         return {
             "status": "fail",
             "code": 500,
+            "message": f"finish_chapter_and_recommend_music 에러: {e}"
             "summary": "",
             "recommanded_music": [],  # 비어있는 리스트
         }
