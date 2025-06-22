@@ -177,7 +177,7 @@ class NovelProcessor:
             return {
                 "status": "fail",
                 "code": 500,
-                "message": "소설 저장 중 오류가 발생했습니다",
+                "message": f"소설 저장 중 오류가 발생했습니다{e}",
                 "prompt": None
             }
 
