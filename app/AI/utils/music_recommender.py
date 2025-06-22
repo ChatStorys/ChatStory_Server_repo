@@ -259,63 +259,63 @@ class MusicRecommender:
     Algorithm 1: 소설 내용 기반 음악 추천
     """
     # 1) 전체를 감싸는 try/except
-    try:
-        # 2) 특징 추출 단계
         try:
-            if len(novelContents) > 300:
-                logging.info(f"긴 텍스트 감지: {len(novelContents)}자, 청크별 분석")
-                target_features = self._analyze_long_text_music_features(novelContents)
-            else:
-                emotion_probs = self.emotion_analyzer.analyze_emotion_with_KoELECTRA(novelContents)
-                top_emotion = (
-                    max(emotion_probs.items(), key=lambda x: x[1])[0]
-                    if emotion_probs else "happy"
-                )
-                logging.info(f"선택된 주요 감정: {top_emotion}")
-                target_features = self.get_music_features_for_emotion(top_emotion)
-        except Exception as e:
-            logging.error("특징 추출 실패:\n%s", traceback.format_exc())
-            raise RuntimeError(f"특징 추출 오류: {e}")
+            # 2) 특징 추출 단계
+            try:
+                if len(novelContents) > 300:
+                    logging.info(f"긴 텍스트 감지: {len(novelContents)}자, 청크별 분석")
+                    target_features = self._analyze_long_text_music_features(novelContents)
+                else:
+                    emotion_probs = self.emotion_analyzer.analyze_emotion_with_KoELECTRA(novelContents)
+                    top_emotion = (
+                        max(emotion_probs.items(), key=lambda x: x[1])[0]
+                        if emotion_probs else "happy"
+                    )
+                    logging.info(f"선택된 주요 감정: {top_emotion}")
+                    target_features = self.get_music_features_for_emotion(top_emotion)
+            except Exception as e:
+                logging.error("특징 추출 실패:\n%s", traceback.format_exc())
+                raise RuntimeError(f"특징 추출 오류: {e}")
 
-        # 3) 음악 DB 로드 단계
-        try:
-            if musicDB is None:
-                manager = self.db_manager or db_manager
-                if manager is None:
-                    raise ValueError("musicDB 또는 db_manager 중 하나가 필요합니다")
-                musicDB = manager.get_music_database_for_recommendation()
-        except Exception as e:
-            logging.error("음악 DB 로드 실패:\n%s", traceback.format_exc())
-            raise RuntimeError(f"음악 DB 로드 오류: {e}")
+            # 3) 음악 DB 로드 단계
+            try:
+                if musicDB is None:
+                    manager = self.db_manager or db_manager
+                    if manager is None:
+                        raise ValueError("musicDB 또는 db_manager 중 하나가 필요합니다")
+                    musicDB = manager.get_music_database_for_recommendation()
+            except Exception as e:
+                logging.error("음악 DB 로드 실패:\n%s", traceback.format_exc())
+                raise RuntimeError(f"음악 DB 로드 오류: {e}")
 
-        # 4) 유사도 계산 및 리스트 생성
-        similarity_list = []
-        try:
-            for entry in musicDB:
-                songName = entry.get("songName", entry.get("musicTitle", "Unknown"))
-                artist = entry.get("artist", entry.get("composer", "Unknown"))
-                song_feats = entry.get("feature_vector", [])
-                if not song_feats or len(song_feats) != 7:
-                    song_feats = [0.5] * 7
-                sim = self.cosine_similarity(target_features, song_feats)
-                similarity_list.append({
-                    "songName": songName,
-                    "artist": artist,
-                    "similarity": sim,
-                })
-        except Exception as e:
-            logging.error("유사도 계산 실패:\n%s", traceback.format_exc())
-            raise RuntimeError(f"유사도 계산 오류: {e}")
+            # 4) 유사도 계산 및 리스트 생성
+            similarity_list = []
+            try:
+                for entry in musicDB:
+                    songName = entry.get("songName", entry.get("musicTitle", "Unknown"))
+                    artist = entry.get("artist", entry.get("composer", "Unknown"))
+                    song_feats = entry.get("feature_vector", [])
+                    if not song_feats or len(song_feats) != 7:
+                        song_feats = [0.5] * 7
+                    sim = self.cosine_similarity(target_features, song_feats)
+                    similarity_list.append({
+                        "songName": songName,
+                        "artist": artist,
+                        "similarity": sim,
+                    })
+            except Exception as e:
+                logging.error("유사도 계산 실패:\n%s", traceback.format_exc())
+                raise RuntimeError(f"유사도 계산 오류: {e}")
 
-        # 5) 정렬 및 결과 반환
-        try:
-            similarity_list.sort(key=lambda x: x["similarity"], reverse=True)
-            return similarity_list[:N]
-        except Exception as e:
-            logging.error("정렬/결과 추출 실패:\n%s", traceback.format_exc())
-            raise RuntimeError(f"결과 처리 오류: {e}")
+            # 5) 정렬 및 결과 반환
+            try:
+                similarity_list.sort(key=lambda x: x["similarity"], reverse=True)
+                return similarity_list[:N]
+            except Exception as e:
+                logging.error("정렬/결과 추출 실패:\n%s", traceback.format_exc())
+                raise RuntimeError(f"결과 처리 오류: {e}")
 
-    except Exception as e:
-        # 최종 오류 핸들링: 빈 리스트 반환
-        logging.error("음악 추천 전체 실패: %s", e)
-        return []
+        except Exception as e:
+            # 최종 오류 핸들링: 빈 리스트 반환
+            logging.error("음악 추천 전체 실패: %s", e)
+            return []
