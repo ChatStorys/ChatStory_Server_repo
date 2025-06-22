@@ -248,7 +248,7 @@ class MusicRecommender:
         return float(similarity)
 
     def recommend_music(self, userID: str,novelContents: str, musicDB: List[Dict] = None, N: int = 5, db_manager=None) -> List[Dict]:
-        """Algorithm 1: 소설 내용 기반 음악 추천"""
+        """Algorithm 1: 소설 내용 기반 음악 추천""" 
         # 1) 전체를 감싸는 try/except
         try:
             # 2) 특징 추출 단계
@@ -262,10 +262,10 @@ class MusicRecommender:
                         max(emotion_probs.items(), key=lambda x: x[1])[0]
                         if emotion_probs else "happy"
                     )
-                    logging.info(f"선택된 주요 감정: {top_emotion}")
+                    # logging.info(f"선택된 주요 감정: {top_emotion}")
                     target_features = self.get_music_features_for_emotion(top_emotion)
             except Exception as e:
-                logging.error("특징 추출 실패:\n%s", traceback.format_exc())
+                # logging.error("특징 추출 실패:\n%s", traceback.format_exc())
                 raise RuntimeError(f"특징 추출 오류: {e}")
 
             # 3) 음악 DB 로드 단계
@@ -276,7 +276,7 @@ class MusicRecommender:
                         raise ValueError("musicDB 또는 db_manager 중 하나가 필요합니다")
                     musicDB = manager.get_music_database_for_recommendation()
             except Exception as e:
-                logging.error("음악 DB 로드 실패:\n%s", traceback.format_exc())
+                # logging.error("음악 DB 로드 실패:\n%s", traceback.format_exc())
                 raise RuntimeError(f"음악 DB 로드 오류: {e}")
 
             # 4) 유사도 계산 및 리스트 생성
@@ -295,7 +295,7 @@ class MusicRecommender:
                         "similarity": sim,
                     })
             except Exception as e:
-                logging.error("유사도 계산 실패:\n%s", traceback.format_exc())
+                # logging.error("유사도 계산 실패:\n%s", traceback.format_exc())
                 raise RuntimeError(f"유사도 계산 오류: {e}")
 
             # 5) 정렬 및 결과 반환
@@ -303,10 +303,10 @@ class MusicRecommender:
                 similarity_list.sort(key=lambda x: x["similarity"], reverse=True)
                 return similarity_list[:N]
             except Exception as e:
-                logging.error("정렬/결과 추출 실패:\n%s", traceback.format_exc())
+                # logging.error("정렬/결과 추출 실패:\n%s", traceback.format_exc())
                 raise RuntimeError(f"결과 처리 오류: {e}")
             
         except Exception as e:
             # 최종 오류 핸들링: 빈 리스트 반환
-            logging.error("음악 추천 전체 실패: %s", e)
+            # logging.error("음악 추천 전체 실패: %s", e)
             return []

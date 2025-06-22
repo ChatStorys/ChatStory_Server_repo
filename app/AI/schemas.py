@@ -28,5 +28,5 @@ class ChapterEndAIResponse(BaseModel): # 챕터 끝 response!
     status: str
     code: int
     summary: str
-    recommanded_music: List[MusicItem]
+    recommended_music: List[MusicItem]
     
