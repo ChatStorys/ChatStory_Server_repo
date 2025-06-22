@@ -299,26 +299,26 @@ class DatabaseManager:
     #     except Exception as e:
     #         raise Exception(f"Error getting chapter contents: {str(e)}")
 
-    # def update_chapter_summary(self, user_id: str, book_id: str, chapter_num: str, summary: str) -> bool:
-    #     """
-    #     Update chapter summary (sumChapter field)
-    #     """
-    #     try:
-    #         result = self.chapters.update_one(
-    #             {
-    #                 "userId": user_id,
-    #                 "bookId": book_id,
-    #                 "chapter_Num": chapter_num
-    #             },
-    #             {
-    #                 "$set": {
-    #                     "sumChapter": summary,
-    #                 }
-    #             }
-    #         )
-    #         return result.modified_count > 0
-    #     except Exception as e:
-    #         raise Exception(f"Error updating chapter summary: {str(e)}")
+    def update_chapter_summary(self, user_id: str, book_id: str, chapter_num: str, summary: str) -> bool:
+        """
+        Update chapter summary (sumChapter field)
+        """
+        try:
+            result = self.chapters.update_one(
+                {
+                    "userId": user_id,
+                    "bookId": book_id,
+                    "chapter_Num": chapter_num
+                },
+                {
+                    "$set": {
+                        "sumChapter": summary,
+                    }
+                }
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            raise Exception(f"Error updating chapter summary: {str(e)}")
 
     def get_user_by_id(self, user_id: str) -> Dict:
         """
