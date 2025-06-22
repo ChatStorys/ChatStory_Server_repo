@@ -432,34 +432,31 @@ def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict
 
 def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
     """
-    챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
-    
-    외부 서버에서 호출할 수 있는 함수입니다.
-    /story/chapter/summary_with_music 엔드포인트의 요청을 처리합니다.
-    현재 작업 중인 챕터(workingFlag=True)를 찾아 요약을 생성하고 음악을 추천합니다.
-    
-    매개변수:
-        user_id: 사용자 ID
-        book_id: 책 ID
-        
-    반환값:
-        처리 결과 딕셔너리
+    챕터 요약 및 음악 추천 요청 처리 함수
     """
+    # 1) AI 호출
     try:
         ai_result = get_novel_processor().finish_chapter_and_recommend_music(
             user_id=user_id,
             book_id=book_id
         )
-        # ai_result 에서 single_music 이 dict 로 나왔다고 가정
-        single_music = ai_result.get("music")  # e.g. {"title": "...", "artist": "..."}
-        
-        # 반드시 리스트로 감싸 주세요!
+        single_music = ai_result.get("music", {})
         music_items = [{
-            "title": single_music["title"],
-            "artist": single_music["artist"],
+            "title": single_music.get("title", ""),
+            "artist": single_music.get("artist", ""),
         }]
-        
-        # 현재 챕터 찾기
+    except Exception as e:
+        logging.error("AI 호출 실패:\n%s", traceback.format_exc())
+        return {
+            "status": "fail",
+            "code": 500,
+            "message": f"AI 호출 중 오류가 발생했습니다: {e}",
+            "summary": "",
+            "recommanded_music": [],
+        }
+
+    # 2) 현재 챕터 조회
+    try:
         chap_doc = db.Chapter.find_one({
             "userId": user_id,
             "bookId": book_id,
@@ -467,40 +464,55 @@ def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
         })
         if not chap_doc:
             raise ValueError("작성 중인 챕터를 찾을 수 없습니다.")
-        # 현재 챕터
         current_ch = chap_doc["chapter_Num"]
-        
-        # 2) chapter및 chapterStorage의 workingFlag 변경
+    except Exception as e:
+        logging.error("현재 챕터 조회 실패:\n%s", traceback.format_exc())
+        return {
+            "status": "fail",
+            "code": 500,
+            "message": f"현재 챕터 조회 중 오류가 발생했습니다: {e}",
+            "summary": ai_result.get("summary", ""),
+            "recommanded_music": music_items,
+        }
+
+    # 3) 이전 챕터 완료 표시
+    try:
         db.Chapter.update_one(
             {"userId": user_id, "bookId": book_id, "chapter_Num": current_ch},
             {"$set": {"workingFlag": False}}
         )
-        
-        
-        # 3) chapter_Num +1 업데이트 (Chapter Collection)
-        next_ch = current_ch + 1
-        db.Chapter.update_one(
-            {"userId": user_id, "bookId": book_id, "chapter_Num": current_ch},
-            {"$set": {
-                "chapter_Num": next_ch,
-                "workingFlag": True
-                      }}
-        )
-        
-
-        return {
-            "status": "success",
-            "code": 200,
-            "summary": ai_result.get("summary", ""),
-            "recommanded_music": music_items,  # List[MusicItem]
-        }
-
     except Exception as e:
-        logging.error("finish_chapter_and_recommend_music 에러:\n%s", traceback.format_exc())
+        logging.error("이전 챕터 완료 표시 실패:\n%s", traceback.format_exc())
         return {
             "status": "fail",
             "code": 500,
-            "message": f"finish_chapter_and_recommend_music 에러: {e}",
-            "summary": "",
-            "recommanded_music": [],  # 비어있는 리스트
+            "message": f"이전 챕터 완료 처리 중 오류가 발생했습니다: {e}",
+            "summary": ai_result.get("summary", ""),
+            "recommanded_music": music_items,
         }
+
+    # 4) 다음 챕터 생성/표시
+    next_ch = current_ch + 1
+    try:
+        db.Chapter.update_one(
+            {"userId": user_id, "bookId": book_id, "chapter_Num": next_ch},
+            {"$set": {"workingFlag": True}},
+            upsert=True
+        )
+    except Exception as e:
+        logging.error("다음 챕터 표시 실패:\n%s", traceback.format_exc())
+        return {
+            "status": "fail",
+            "code": 500,
+            "message": f"다음 챕터 표시 중 오류가 발생했습니다: {e}",
+            "summary": ai_result.get("summary", ""),
+            "recommanded_music": music_items,
+        }
+
+    # 모두 성공
+    return {
+        "status": "success",
+        "code": 200,
+        "summary": ai_result.get("summary", ""),
+        "recommanded_music": music_items,
+    }
