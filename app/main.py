@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI
+from fastapi import Request
 from app.api.v1.routers import auth, story
 from app.AI import router
 from fastapi.middleware.cors import CORSMiddleware
