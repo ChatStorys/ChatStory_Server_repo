@@ -102,6 +102,21 @@ def finish_story(user_id: str, book_id: str) -> bool:
             }
         }
     )
+    
+    # 2) 마지막 챕터 찾기
+    last_chap = db.Chapter.find_one(
+        {"userId": user_id, "bookId": book_id},
+        sort=[("chapter_Num", DESCENDING)]
+    )
+    if not last_chap:
+        return True  # 챕터가 없으면 더 할 일 없음
+
+    # 3) 마지막 챕터 한 건만 chapter_Num -= 1
+    db.Chapter.update_one(
+        {"_id": last_chap["_id"]},
+        {"$inc": {"chapter_Num": -1}}
+    )
+    
     return result.modified_count == 1
 
 # 아카이브

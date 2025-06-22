@@ -68,6 +68,7 @@ class DatabaseManager:
                 
             # Get chat contents
             chat = self.chat_storage.find_one({
+                "bookId": book_id,
                 "chapter_Num": chapter["chapter_Num"]
             })
             
@@ -150,7 +151,7 @@ class DatabaseManager:
         except Exception as e:
             raise Exception(f"Error getting user data: {str(e)}")
 
-    def update_chat_history(self, user_id: str, chapter_num: str, content: List[Dict]) -> bool:
+    def update_chat_history(self, user_id: str, chapter_num: str, content: List[Dict], book_id: str) -> bool:
         """
         Update chat history for a chapter
         """
@@ -158,6 +159,7 @@ class DatabaseManager:
             self.chat_storage.update_one(
                 {
                     "userId": user_id,
+                    "bookId": book_id,
                     "chapter_Num": chapter_num
                 },
                 {
@@ -171,18 +173,18 @@ class DatabaseManager:
         except Exception as e:
             raise Exception(f"Error updating chat history: {str(e)}")
 
-    def get_chat_history(self, user_id: str, chapter_num: str) -> Optional[List[Dict]]:
-        """
-        Get chat history for a chapter
-        """
-        try:
-            chat = self.chat_storage.find_one({
-                "userId": user_id,
-                "chapter_Num": chapter_num
-            })
-            return chat.get("content", []) if chat else []
-        except Exception as e:
-            raise Exception(f"Error getting chat history: {str(e)}")
+    # def get_chat_history(self, user_id: str, chapter_num: str) -> Optional[List[Dict]]:
+    #     """
+    #     Get chat history for a chapter
+    #     """
+    #     try:
+    #         chat = self.chat_storage.find_one({
+    #             "userId": user_id,
+    #             "chapter_Num": chapter_num
+    #         })
+    #         return chat.get("content", []) if chat else []
+    #     except Exception as e:
+    #         raise Exception(f"Error getting chat history: {str(e)}")
 
     def get_music_database_for_recommendation(self) -> List[Dict]:
         """
@@ -252,71 +254,71 @@ class DatabaseManager:
         except Exception as e:
             raise Exception(f"Error updating chapter music: {str(e)}")
 
-    def get_chapter_contents(self, book_id: str, chapter_num: str) -> Dict:
-        """
-        Get specific chapter contents by book_id and chapter_num
-        Returns:
-            {
-                "chapter_info": {
-                    "bookId": "book1",
-                    "chapter_Num": "chapter_1",
-                    "sumChapter": "요약",
-                    "workingFlag": True/False,
-                    "musicTitle": "노래 제목",
-                    "composer": "작곡자"
-                },
-                "chat_contents": [
-                    {"LLM_Model": "...", "User": "..."},
-                    ...
-                ]
-            }
-        """
-        try:
-            # Get specific chapter
-            chapter = self.chapters.find_one({
-                "bookId": book_id,
-                "chapter_Num": chapter_num
-            })
+    # def get_chapter_contents(self, book_id: str, chapter_num: str) -> Dict:
+    #     """
+    #     Get specific chapter contents by book_id and chapter_num
+    #     Returns:
+    #         {
+    #             "chapter_info": {
+    #                 "bookId": "book1",
+    #                 "chapter_Num": "chapter_1",
+    #                 "sumChapter": "요약",
+    #                 "workingFlag": True/False,
+    #                 "musicTitle": "노래 제목",
+    #                 "composer": "작곡자"
+    #             },
+    #             "chat_contents": [
+    #                 {"LLM_Model": "...", "User": "..."},
+    #                 ...
+    #             ]
+    #         }
+    #     """
+    #     try:
+    #         # Get specific chapter
+    #         chapter = self.chapters.find_one({
+    #             "bookId": book_id,
+    #             "chapter_Num": chapter_num
+    #         })
             
-            if not chapter:
-                return None
+    #         if not chapter:
+    #             return None
                 
-            # Get chat contents
-            chat = self.chat_storage.find_one({
-                "chapter_Num": chapter_num
-            })
+    #         # Get chat contents
+    #         chat = self.chat_storage.find_one({
+    #             "chapter_Num": chapter_num
+    #         })
             
-            # Remove MongoDB _id
-            if chapter:
-                chapter.pop("_id", None)
+    #         # Remove MongoDB _id
+    #         if chapter:
+    #             chapter.pop("_id", None)
             
-            return {
-                "chapter_info": chapter,
-                "chat_contents": chat.get("content", []) if chat else []
-            }
-        except Exception as e:
-            raise Exception(f"Error getting chapter contents: {str(e)}")
+    #         return {
+    #             "chapter_info": chapter,
+    #             "chat_contents": chat.get("content", []) if chat else []
+    #         }
+    #     except Exception as e:
+    #         raise Exception(f"Error getting chapter contents: {str(e)}")
 
-    def update_chapter_summary(self, user_id: str, book_id: str, chapter_num: str, summary: str) -> bool:
-        """
-        Update chapter summary (sumChapter field)
-        """
-        try:
-            result = self.chapters.update_one(
-                {
-                    "userId": user_id,
-                    "bookId": book_id,
-                    "chapter_Num": chapter_num
-                },
-                {
-                    "$set": {
-                        "sumChapter": summary,
-                    }
-                }
-            )
-            return result.modified_count > 0
-        except Exception as e:
-            raise Exception(f"Error updating chapter summary: {str(e)}")
+    # def update_chapter_summary(self, user_id: str, book_id: str, chapter_num: str, summary: str) -> bool:
+    #     """
+    #     Update chapter summary (sumChapter field)
+    #     """
+    #     try:
+    #         result = self.chapters.update_one(
+    #             {
+    #                 "userId": user_id,
+    #                 "bookId": book_id,
+    #                 "chapter_Num": chapter_num
+    #             },
+    #             {
+    #                 "$set": {
+    #                     "sumChapter": summary,
+    #                 }
+    #             }
+    #         )
+    #         return result.modified_count > 0
+    #     except Exception as e:
+    #         raise Exception(f"Error updating chapter summary: {str(e)}")
 
     def get_user_by_id(self, user_id: str) -> Dict:
         """

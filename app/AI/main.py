@@ -161,7 +161,7 @@ class NovelProcessor:
             # 11. 채팅 히스토리 업데이트
             updated_chat_history = current_chapter.get('chat_contents', [])
             updated_chat_history.append({"LLM_Model": content, "User": user_message})
-            self.db_manager.update_chat_history(user_id, chapter_num, updated_chat_history)
+            self.db_manager.update_chat_history(user_id, chapter_num, updated_chat_history, book_id)
             
             print(f"[HF 모델] 챕터 생성 완료 - 길이: {len(content)}자")
             
@@ -458,6 +458,35 @@ def handle_chapter_summary_with_music(user_id: str, book_id: str) -> Dict:
             "title": single_music["title"],
             "artist": single_music["artist"],
         }]
+        
+        # 현재 챕터 찾기
+        chap_doc = db.Chapter.find_one({
+            "userId": user_id,
+            "bookId": book_id,
+            "workingFlag": True
+        })
+        if not chap_doc:
+            raise ValueError("작성 중인 챕터를 찾을 수 없습니다.")
+        # 현재 챕터
+        current_ch = chap_doc["chapter_Num"]
+        
+        # 2) chapter및 chapterStorage의 workingFlag 변경
+        db.Chapter.update_one(
+            {"userId": user_id, "bookId": book_id, "chapter_Num": current_ch},
+            {"$set": {"workingFlag": False}}
+        )
+        
+        
+        # 3) chapter_Num +1 업데이트 (Chapter Collection)
+        next_ch = current_ch + 1
+        db.Chapter.update_one(
+            {"userId": user_id, "bookId": book_id, "chapter_Num": current_ch},
+            {"$set": {
+                "chapter_Num": next_ch,
+                "workingFlag": True
+                      }}
+        )
+        
 
         return {
             "status": "success",
