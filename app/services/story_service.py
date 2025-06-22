@@ -37,7 +37,7 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
     book_id = f"book{seq:03d}"
     
     # 소설 생성
-    result = db.stories.insert_one({
+    result = db.Book.insert_one({
         "title": request.title,
         "genre": request.category,
         "userId": user_id,
@@ -51,7 +51,7 @@ def get_creating_story(user_id: str):
     """
     작성 중인(완료되지 않은) 소설이 있으면 반환
     """
-    return db.stories.find_one({
+    return db.Book.find_one({
         "userId": user_id,
         "workingFlag": True
     })
@@ -72,7 +72,7 @@ def finish_story(user_id: str, book_id: str) -> bool:
     kst = timezone(timedelta(hours=9))
     completed_at = datetime.now(kst)
 
-    result = db.stories.update_one(
+    result = db.Book.update_one(
         {
             "userId": user_id,
             "bookId": book_id,
@@ -93,7 +93,7 @@ def list_archived_stories(user_id: str) -> List[ArchiveItemResponse]:
     각 항목에 bookId, title, createdAt 필드를 포함합니다.
     """
     # DB에서 작업 완료된 소설 문서 조회
-    cursor = db.stories.find({
+    cursor = db.Book.find({
         "userId": user_id,
         "workingFlag": False
     })
@@ -113,7 +113,7 @@ def get_story_content(user_id: str, book_id: str) :
     특정 소설(book_id)에 대한 전체 내용을 반환합니다.
     chapters 필드에 저장된 리스트를 그대로 내려줍니다.
     """
-    doc = db.stories.find_one({
+    doc = db.Chapter.find_one({
         "userId": user_id,
         "bookId": book_id,
         "workingFlag": False
@@ -146,7 +146,7 @@ def delete_story(user_id: str, book_id: str) -> bool:
     특정 소설(book_id)에 대한 문서를 삭제합니다.
     성공적으로 삭제되면 True를 반환합니다.
     """
-    result = db.stories.delete_one({
+    result = db.Book.delete_one({
         "userId": user_id,
         "bookId": book_id
     })
