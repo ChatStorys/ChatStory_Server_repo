@@ -5,10 +5,10 @@ from app.api.v1.routers import auth, story
 from app.AI import router
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from app.AI.schemas import (
-    ChatMessageRequest, ChatMessageResponse,
-    ChapterEndAIRequest, ChapterEndAIResponse
-)
+# from app.AI.schemas import (
+#     # ChatMessageRequest, ChatMessageResponse,
+#     ChapterEndAIRequest, ChapterEndAIResponse
+# )
 
 load_dotenv()
 
