@@ -186,14 +186,12 @@ def get_story_content(user_id: str, book_id: str) :
         num = chap["chapter_Num"]
 
         # 3) ChatStorage 컬렉션에서 같은 챕터의 대화 저장 가져오기
+        # ChatStorage에서 같은 챕터 문서를 통째로 조회
         chat_doc = db.ChatStorage.find_one(
-            {"userId": user_id, "bookId": book_id},
-            {"_id":0, "content": {"$elemMatch": {"chapter_Num": num}}}
+            {"userId": user_id, "bookId": book_id, "chapter_Num": num},
+            {"_id": 0, "content": 1}
         )
-        # chat_doc["content"] 는 리스트 형태로 [{chapter_Num, messages:[{User,LLM_Model},...]}]
-        messages = chat_doc.get("content", [])
-        # 추출
-        msgs = messages[0]["messages"] if messages else []
+        msgs = chat_doc.get("content", []) if chat_doc else []
 
         # 4) messages를 “사용자: …\nAI: …\n” 형태로 합치기
         content_lines = []
