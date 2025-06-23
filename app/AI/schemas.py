@@ -22,7 +22,7 @@ class MusicItem(BaseModel):
 class ChapterContent(BaseModel):
     chapter_num: int
     content: str                     # 사용자+AI 대화 합본
-    recommended_music: Optional[MusicItem] = None
+    recommended_music: List[MusicItem] = None
     
 class ChapterEndAIRequest(BaseModel): # 챕터 끝 request!
     book_id: str
