@@ -27,8 +27,8 @@ ai_router = APIRouter()
         
 #         return result
         
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 @ai_router.post("/story/chapter/summary_with_music", response_model=ChapterEndAIResponse)
 def generate_chapter_summary(request: ChapterEndAIRequest):
