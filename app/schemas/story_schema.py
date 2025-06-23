@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Literal, List, Optional
 from datetime import datetime
+from app.AI.schemas import ChapterContent
 
 class StoryCreateRequest(BaseModel): # 소설 새로 생성 시 
     title: str = Field(..., min_length=1, max_length=100)
@@ -72,7 +73,7 @@ class ArchiveItemResponse(BaseModel):
 class StoryContentResponse(BaseModel):
     book_id: str = Field(..., alias="bookId")
     title: str
-    chapters: List[str]
+    chapters: List[ChapterContent]
     created_at: datetime = Field(..., alias="createdAt")
 
     class Config:

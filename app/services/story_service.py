@@ -226,7 +226,7 @@ def get_story_content(user_id: str, book_id: str) :
 
     return StoryContentResponse(
         bookId=book_id,
-        title=doc.get("title"),
+        title=book.get("title"),
         chapters=chapters,
         createdAt=created_at
     )
