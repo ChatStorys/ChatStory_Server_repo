@@ -281,17 +281,21 @@ class NovelProcessor:
                 }
 
             # 3. 채팅내용 텍스트화
-            chat_contents = current_chapter.get('chat_contents', [])
-            chapter_content_text = "\n".join(
-                f"사용자: {c['User']}" if 'User' in c else f"AI: {c['LLM_Model']}"
-                for c in chat_contents
-            ).strip()
-            if not chapter_content_text:
-                return {
-                    "status": "fail",
-                    "code": 500,
-                    "message": f"챕터({chapter_num})에 텍스트가 존재하지 않습니다."
-                }
+            try:
+                chat_contents = current_chapter.get('chat_contents', [])
+                chapter_content_text = "\n".join(
+                    f"사용자: {c['User']}" if 'User' in c else f"AI: {c['LLM_Model']}"
+                    for c in chat_contents
+                ).strip()
+                if not chapter_content_text:
+                    raise ValueError(f"값이 존재하지 않습니다 : {chapter_content_text}")
+
+            except Exception as e:
+                    return {
+                        "status": "fail",
+                        "code": 500,
+                        "message": f"에러 발생 : {e}"
+                    }
 
             # 4. 요약 생성
             try:
