@@ -309,4 +309,4 @@ class MusicRecommender:
         except Exception as e:
             # 최종 오류 핸들링: 빈 리스트 반환
             # logging.error("음악 추천 전체 실패: %s", e)
-            return []
+            raise HTTP_500_INTERNAL_SERVER_ERROR(f"결과 처리 오류: {e}")
