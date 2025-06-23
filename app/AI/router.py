@@ -4,7 +4,7 @@ from app.AI.schemas import (
     # ChatMessageRequest, ChatMessageResponse,
     ChapterEndAIRequest, ChapterEndAIResponse
 )
-from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
+# from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
 import httpx
 import os
 from dotenv import load_dotenv
