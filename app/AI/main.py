@@ -231,7 +231,7 @@ class NovelProcessor:
             
             # 11. 채팅 히스토리 업데이트
             updated_chat_history = current_chapter.get('chat_contents', [])
-            updated_chat_history.append({"LLM_Model": content, "User": user_message})
+            updated_chat_history.append({"User": content, "LLM_Model": user_message})
             self.db_manager.update_chat_history(user_id, chapter_num, updated_chat_history, book_id)
             
             print(f"[HF 모델] 챕터 생성 완료 - 길이: {len(content)}자")
@@ -327,7 +327,8 @@ class NovelProcessor:
                     userID=user_id,
                     novelContents=chapter_content_text,
                     musicDB=None,
-                    N=1
+                    N=1,
+                    db_manager=self.db_manager
                 )
                 if not recommendations:
                     raise ValueError("음악 추천 결과가 없습니다.")
