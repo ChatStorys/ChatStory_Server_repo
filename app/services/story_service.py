@@ -105,7 +105,7 @@ def finish_story(user_id: str, book_id: str) -> bool:
     # 만약 req.created_at이 문자열이라면 datetime으로 파싱
     kst = timezone(timedelta(hours=9))
     completed_at = datetime.now(kst)
-
+    # 1) Book 컬렉션: 진행 중이던 챕터만 workingFlag=False
     result = db.Book.update_one(
         {
             "userId": user_id,
@@ -118,8 +118,13 @@ def finish_story(user_id: str, book_id: str) -> bool:
             }
         }
     )
+    # 2) Chapter 컬렉션: 진행 중이던 챕터만 workingFlag=False
+    chap_flag_res = db.Chapter.update_one(
+        {"userId": user_id, "bookId": book_id, "workingFlag": True},
+        {"$set": {"workingFlag": False}}
+    )
     
-    # 2) 마지막 챕터 찾기
+    # 3) 마지막 챕터 찾기, Chapter 콜렉션에 마지막 챕터 제거
     last_chap = db.Chapter.find_one(
         {"userId": user_id, "bookId": book_id},
         sort=[("chapter_Num", DESCENDING)]
@@ -127,12 +132,14 @@ def finish_story(user_id: str, book_id: str) -> bool:
     if not last_chap:
         return True  # 챕터가 없으면 더 할 일 없음
 
-    # 3) 마지막 챕터 한 건만 chapter_Num -= 1
-    db.Chapter.update_one(
-        {"_id": last_chap["_id"]},
-        {"$inc": {"chapter_Num": -1}}
-    )
+    db.Chapter.delete_one({"_id": last["_id"]})
 
+    # 4) ChatStorage에서도 마지막 챕터 제거
+    db.ChatStorage.update_one(
+        {"userId": user_id, "bookId": book_id},
+        {"$pull": {"content": {"chapter_Num": last["chapter_Num"]}}}
+    )
+    
     
     return result.modified_count == 1
 
@@ -146,7 +153,7 @@ def list_archived_stories(user_id: str) -> List[ArchiveItemResponse]:
     cursor = db.Book.find({
         "userId": user_id,
         "workingFlag": False
-    })
+    }).sort("createdAt", DESCENDING)
     # Pydantic 모델로 변환하여 반환
     
     return [
@@ -163,31 +170,63 @@ def get_story_content(user_id: str, book_id: str) :
     특정 소설(book_id)에 대한 전체 내용을 반환합니다.
     chapters 필드에 저장된 리스트를 그대로 내려줍니다.
     """
+    book = db.Book.find_one({"userId": user_id, "bookId": book_id})
+    if not book: # 찾는 책 없으면 None 반환
+        return None
+    
     doc = db.Chapter.find_one({
         "userId": user_id,
         "bookId": book_id,
         "workingFlag": False
-    })
+    }).sort("chapter_Num", ASCENDING)
+    
     if not doc:
         return None
 
-    # 'chapters' 필드에 전체 소설 내용(문단 리스트)이 있다고 가정
-    chapters = doc.get("chapters", [])
-    # createdAt 값이 없으면 ObjectId 생성 시간으로 대체
-    created_at = doc.get("createdAt") or doc.get("created_at")
-    if created_at is None and "_id" in doc:
-        try:
-            # MongoDB ObjectId has generation_time attribute
-            created_at = doc["_id"].generation_time
-        except Exception:
-            kst = timezone(timedelta(hours=9))
-            created_at = datetime.now(kst)
+    chapters: List[ChapterContent] = []
+    for chap in chapters_cursor:
+        num = chap["chapter_Num"]
+
+        # 3) ChatStorage 컬렉션에서 같은 챕터의 대화 저장 가져오기
+        chat_doc = db.ChatStorage.find_one(
+            {"userId": user_id, "bookId": book_id},
+            {"_id":0, "content": {"$elemMatch": {"chapter_Num": num}}}
+        )
+        # chat_doc["content"] 는 리스트 형태로 [{chapter_Num, messages:[{User,LLM_Model},...]}]
+        messages = chat_doc.get("content", [])
+        # 추출
+        msgs = messages[0]["messages"] if messages else []
+
+        # 4) messages를 “사용자: …\nAI: …\n” 형태로 합치기
+        content_lines = []
+        for m in msgs:
+            if "User" in m:
+                content_lines.append(f"사용자: {m['User']}")
+            elif "LLM_Model" in m:
+                content_lines.append(f"AI: {m['LLM_Model']}")
+        full_text = "\n".join(content_lines)
+
+        # 5) 추천 음악 정보 추출 (music 필드가 {musicTitle, composer} 형태로 저장되어 있다고 가정)
+        music_info = None
+        if chap.get("music"):
+            music_info = MusicInfo(
+                title=chap["music"].get("musicTitle"),
+                artist=chap["music"].get("composer"),
+            )
+            
+        chapters.append(
+            ChapterContent(
+                chapter_num=num,
+                content=full_text,
+                recommended_music=music_info
+            )
+        )
 
     # ChatStorage 안에 있는 모든 chapter의 content들 이어붙여 한 번에 보내기
     # (List로, 기존에는 LLM Model, User 순으로 구현 되어있었으나 순서 User, LLM Model로 바꿔줄 것)
 
     return StoryContentResponse(
-        bookId=doc.get("bookId"),
+        bookId=book_id,
         title=doc.get("title"),
         chapters=chapters,
         createdAt=created_at
