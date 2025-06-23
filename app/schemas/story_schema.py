@@ -62,9 +62,6 @@ class FinishStoryResponse(BaseModel):
 class ArchiveItemResponse(BaseModel):
     book_id: str = Field(..., alias="bookId")
     title: str
-    # genre: str
-    # user_id: str
-    # workingFlag: bool
     created_at: datetime = Field(..., alias="createdAt")
 
     class Config:
