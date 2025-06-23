@@ -1,7 +1,7 @@
 from pymongo import MongoClient, ReturnDocument
 from datetime import datetime, timedelta, timezone
 from app.db.mongo import db
-from app.AI.router import continue_story, ChatMessageRequest  # AI 요청 스키마
+# from app.AI.router import continue_story, ChatMessageRequest  # AI 요청 스키마
 # from app.AI.schemas import StorySaveRequest
 from app.schemas.story_schema import (
     StoryCreateRequest, FinishStoryRequest,
