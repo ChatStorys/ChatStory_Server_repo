@@ -247,7 +247,8 @@ class DatabaseManager:
                     "chapter_Num": chapter_num
                 },
                 {
-                    "$set": update_data
+                    "$set": 
+                        update_data
                 }
             )
             return result.modified_count > 0

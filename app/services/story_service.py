@@ -206,10 +206,10 @@ def get_story_content(user_id: str, book_id: str) :
 
         # 5) 추천 음악 정보 추출 (music 필드가 {musicTitle, composer} 형태로 저장되어 있다고 가정)
         music_info = None
-        if chap.get("music"):
+        if chap.get("musicTitle") or chap.get("composer"):
             music_info = MusicItem(
-                title=chap["music"].get("musicTitle"),
-                artist=chap["music"].get("composer"),
+                title=chap.get("musicTitle", ""),
+                artist=chap.get("composer", "")
             )
             
         chapters.append(
