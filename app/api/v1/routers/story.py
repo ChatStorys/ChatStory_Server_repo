@@ -109,8 +109,8 @@ async def front_chat(
     try:
         result = handle_story_continue(
             user_id=current_user,
-            book_id=req.book_id,
-            prompt=req.prompt
+            prompt=req.prompt,
+            book_id=req.book_id
         )
         return result
     
