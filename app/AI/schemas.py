@@ -30,3 +30,7 @@ class ChapterEndAIResponse(BaseModel): # 챕터 끝 response!
     summary: str
     recommended_music: List[MusicItem]
     
+class ChapterContent(BaseModel):
+    chapter_num: int
+    content: str                     # 사용자+AI 대화 합본
+    recommended_music: Optional[MusicInfo]  # musicTitle, composer
