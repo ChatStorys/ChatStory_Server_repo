@@ -255,7 +255,7 @@ class MusicRecommender:
             # 2) 특징 추출 단계
             try:
                 if len(novelContents) > 300:
-                    logging.info(f"긴 텍스트 감지: {len(novelContents)}자, 청크별 분석")
+                    # logging.info(f"긴 텍스트 감지: {len(novelContents)}자, 청크별 분석")
                     target_features = self._analyze_long_text_music_features(novelContents)
                 else:
                     emotion_probs = self.emotion_analyzer.analyze_emotion_with_KoELECTRA(novelContents)
