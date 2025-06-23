@@ -291,11 +291,11 @@ class NovelProcessor:
                     raise ValueError(f"값이 존재하지 않습니다 : {chapter_content_text}")
 
             except Exception as e:
-                    return {
-                        "status": "fail",
-                        "code": 500,
-                        "message": f"에러 발생 : {e}"
-                    }
+                return {
+                    "status": "fail",
+                    "code": 500,
+                    "message": f"에러 발생 : {e}"
+                }
 
             # 4. 요약 생성
             try:
