@@ -119,33 +119,36 @@ async def front_chat(
 
 # 소설 끝내기
 @router.post(
-    "/finish", 
+    "/finish",
     response_model=FinishStoryResponse,
     summary="소설 완료 처리"
 )
 async def finish_story_router(
-    book_id: str = Query(..., description="완료할 소설의 ID"),
-    user_id: str = Depends(get_current_user)
+    req: FinishStoryRequest,                # JSON body 로 받기
+    user_id: str = Depends(get_current_user) 
 ):
     """
     workingFlag를 False로 변경하여 소설을 완료 처리합니다.
     """
     try:
-        success = finish_story(user_id, book_id)
+        success = finish_story(user_id, req.book_id)   # req.book_id 사용
         if not success:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail="해당 소설을 찾을 수 없습니다.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="해당 소설을 찾을 수 없습니다."
+            )
         return FinishStoryResponse(
-            status="success", code=200,
+            status="success",
+            code=200,
             message="소설 작성 완료 처리되었습니다."
         )
     except HTTPException:
         raise
-    except Exception as e:
-        print("finish_story 에러:", e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="소설 완료 처리에 실패했습니다.")
-
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="소설 완료 처리에 실패했습니다."
+        )
 # 5. 아카이브 목록 조회
 @router.get(
     "/archive",

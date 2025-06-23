@@ -238,8 +238,27 @@ def delete_story(user_id: str, book_id: str) -> bool:
     특정 소설(book_id)에 대한 문서를 삭제합니다.
     성공적으로 삭제되면 True를 반환합니다.
     """
-    result = db.Book.delete_one({
+    # 1) Book 문서 삭제
+    book_res = db.Book.delete_one({
         "userId": user_id,
         "bookId": book_id
     })
-    return result.deleted_count == 1
+
+    # 2) Chapter 문서들 삭제
+    chap_res = db.Chapter.delete_many({
+        "userId": user_id,
+        "bookId": book_id
+    })
+
+    # 3) ChatStorage 문서 삭제
+    # 만약 ChatStorage가 한 문서당 하나의 책만 저장한다면 delete_many
+    chat_res = db.ChatStorage.delete_many({
+        "userId": user_id,
+        "bookId": book_id
+    })
+    try: 
+        if (book_res.deleted_count == 1 and chap_res.deleted_count == 1 and chat_res.deleted_count == 1):
+            return True
+    except Exception as e:
+        return f"삭제하다가 문제가 발생했습니다{e}"
+        
