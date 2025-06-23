@@ -132,12 +132,12 @@ def finish_story(user_id: str, book_id: str) -> bool:
     if not last_chap:
         return True  # 챕터가 없으면 더 할 일 없음
 
-    db.Chapter.delete_one({"_id": last["_id"]})
+    db.Chapter.delete_one({"_id": last_chap["_id"]})
 
     # 4) ChatStorage에서도 마지막 챕터 제거
     db.ChatStorage.update_one(
         {"userId": user_id, "bookId": book_id},
-        {"$pull": {"content": {"chapter_Num": last["chapter_Num"]}}}
+        {"$pull": {"content": {"chapter_Num": last_chap["chapter_Num"]}}}
     )
     
     
