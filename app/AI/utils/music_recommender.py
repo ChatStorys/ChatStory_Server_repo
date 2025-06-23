@@ -5,6 +5,7 @@ Algorithm 1, 3, 4를 구현하여 감정 기반 음악 추천을 수행합니다
 """
 
 import numpy as np
+from fastapi import HTTPException, status
 from typing import Dict, List
 from app.AI.utils.emotion_analyzer import EmotionAnalyzer
 import re
