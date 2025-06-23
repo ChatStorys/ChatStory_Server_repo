@@ -343,6 +343,13 @@ class NovelProcessor:
                     }
                 )
                 # workingFlag=False 처리도 여기서 호출
+                # db.manger에 chapter의 flag를 0으로 만드는 메서드 필요
+                self.db.manager.complete_chapter(
+                    user_id=user_id, 
+                    book_id=book_id, 
+                    chapter_num=chapter_num
+                )
+                # 여기에선 다음 챕터를 반환하니 workingFlag가 True가 될거임
                 return {
                     "status": "success",
                     "code": 200,

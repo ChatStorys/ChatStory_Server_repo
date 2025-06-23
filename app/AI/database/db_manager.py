@@ -254,6 +254,43 @@ class DatabaseManager:
         except Exception as e:
             raise Exception(f"Error updating chapter music: {str(e)}")
 
+    # 
+    def complete_chapter(self, user_id: str, book_id: str, chapter_num: int) -> None:
+        """
+        1) 현재 챕터 완료(workingFlag=False)
+        2) 다음 챕터 생성(chapter_Num+1, workingFlag=True)
+        3) ChatStorage에 다음 챕터 빈 대화 슬롯 추가
+        """
+        # 1) 현재 챕터 플래그 False
+        self.chapters.update_one(
+            {"userId": user_id, "bookId": book_id, "chapter_Num": chapter_num},
+            {"$set": {"workingFlag": False}}
+        )
+
+        # 2) 다음 챕터 번호 계산
+        next_num = chapter_num + 1
+
+        # 2-1) 새로운 Chapter 문서 삽입
+        self.chapters.insert_one({
+            "userId": user_id,
+            "bookId": book_id,
+            "chapter_Num": next_num,
+            "chat_contents": [],       # 채팅 히스토리 빈 리스트
+            "workingFlag": True,
+            # summary, music 같은 필드는 나중에 채워질 예정
+        })
+
+        # 3) ChatStorage에도 새 챕터 슬롯 추가
+        # 한 문서에 모든 챕터 대화를 저장하는 구조라면
+        self.chat_storage.update_one(
+            {"userId": user_id, "bookId": book_id},
+            {"$push": {
+                "content": {
+                    "chapter_Num": next_num,
+                    "messages": []        # 빈 메시지 리스트
+                }
+            }}
+        )
     # def get_chapter_contents(self, book_id: str, chapter_num: str) -> Dict:
     #     """
     #     Get specific chapter contents by book_id and chapter_num
