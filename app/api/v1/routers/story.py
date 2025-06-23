@@ -121,12 +121,15 @@ async def front_chat(
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"{e}")
 
 @router.post("/story/chapter/summary_with_music", response_model=ChapterEndAIResponse)
-def generate_chapter_summary(request: ChapterEndAIRequest):
+def generate_chapter_summary(
+    request: ChapterEndAIRequest,
+    current_user: str = Depends(get_current_user)    
+):
     """챕터 요약 및 음악 추천 엔드포인트"""
     try:
         # 챕터 요약 및 음악 추천 생성
         result = handle_chapter_summary_with_music(
-            user_id=request.user_id,
+            user_id=current_user,
             book_id=request.book_id
         )
         
