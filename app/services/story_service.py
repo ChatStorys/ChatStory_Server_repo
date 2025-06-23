@@ -63,7 +63,7 @@ def create_story(user_id: str, request: StoryCreateRequest) -> str:
         "chapter_Num": 1,        
         "bookId": book_id, 
         "content": [
-            { "LLM_Model": "", "User": "" }
+            { "User": "", "LLM_Model": "" }
             ]
     })
     

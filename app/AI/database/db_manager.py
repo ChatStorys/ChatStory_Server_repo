@@ -275,22 +275,22 @@ class DatabaseManager:
             "userId": user_id,
             "bookId": book_id,
             "chapter_Num": next_num,
-            "chat_contents": [],       # 채팅 히스토리 빈 리스트
+            "sumChapter": "",
             "workingFlag": True,
+            "musicTitle": "",
+            "composer": ""
             # summary, music 같은 필드는 나중에 채워질 예정
         })
 
         # 3) ChatStorage에도 새 챕터 슬롯 추가
         # 한 문서에 모든 챕터 대화를 저장하는 구조라면
-        self.chat_storage.update_one(
-            {"userId": user_id, "bookId": book_id},
-            {"$push": {
-                "content": {
-                    "chapter_Num": next_num,
-                    "messages": []        # 빈 메시지 리스트
-                }
-            }}
-        )
+        self.chat_storage.insert_one({
+            "userId": user_id,
+            "bookId": book_id,
+            "chapter_Num": next_num,
+            "content": []           # 빈 메시지 배열
+        })
+        
     # def get_chapter_contents(self, book_id: str, chapter_num: str) -> Dict:
     #     """
     #     Get specific chapter contents by book_id and chapter_num

@@ -327,12 +327,12 @@ class NovelProcessor:
                     userID=user_id,
                     novelContents=chapter_content_text,
                     musicDB=None,
-                    N=1,
-                    db_manager=self.db_manager
+                    N=1
                 )
                 if not recommendations:
                     raise ValueError("음악 추천 결과가 없습니다.")
                 selected = recommendations[0]
+                
                 self.db_manager.update_chapter_music(
                     user_id=user_id,
                     book_id=book_id,
