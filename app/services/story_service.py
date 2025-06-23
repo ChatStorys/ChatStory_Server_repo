@@ -7,7 +7,7 @@ from app.schemas.story_schema import (
     StoryCreateRequest, FinishStoryRequest,
     ArchiveItemResponse, StoryContentResponse
 )
-from app.AI.schemas import ChapterContent
+from app.AI.schemas import ChapterContent, MusicItem
 from typing import List, Dict
 # from app.services.story_service import save_user_message
 import os
@@ -207,7 +207,7 @@ def get_story_content(user_id: str, book_id: str) :
         # 5) 추천 음악 정보 추출 (music 필드가 {musicTitle, composer} 형태로 저장되어 있다고 가정)
         music_info = None
         if chap.get("music"):
-            music_info = MusicInfo(
+            music_info = MusicItem(
                 title=chap["music"].get("musicTitle"),
                 artist=chap["music"].get("composer"),
             )
