@@ -9,17 +9,17 @@ import httpx
 import os
 from dotenv import load_dotenv
 from typing import List, Optional, Dict
-from app.AI.main import NovelProcessor
+from app.AI.main import handle_chapter_summary_with_music, handle_story_continue
 
 ai_router = APIRouter()
-processor = NovelProcessor()
+# processor = NovelProcessor()
 
 @ai_router.post("/story/continue")
 def continue_story(request: ChatMessageRequest):
     """소설 계속 쓰기 엔드포인트"""
     try:
         # AI 모델을 사용하여 소설 생성
-        result = processor.handle_story_continue(
+        result = handle_story_continue(
             user_id=request.user_id,
             user_message=request.user_message,
             book_id=request.book_id
@@ -35,7 +35,7 @@ def generate_chapter_summary(request: ChapterEndAIRequest):
     """챕터 요약 및 음악 추천 엔드포인트"""
     try:
         # 챕터 요약 및 음악 추천 생성
-        result = processor.handle_chapter_summary_with_music(
+        result = handle_chapter_summary_with_music(
             user_id=request.user_id,
             book_id=request.book_id
         )

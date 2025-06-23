@@ -7,6 +7,16 @@ from app.AI.database.db_manager import DatabaseManager
 from app.AI.utils.emotion_analyzer import EmotionAnalyzer
 from app.AI.utils.music_recommender import MusicRecommender
 
+# 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
+novel_processor = None
+
+def get_novel_processor():
+    """NovelProcessor 인스턴스 반환 (지연 초기화)"""
+    global novel_processor
+    if novel_processor is None:
+        novel_processor = NovelProcessor()
+    return novel_processor
+
 
 # 환경변수 로드
 load_dotenv()
@@ -299,16 +309,6 @@ class NovelProcessor:
                 "message": f"알 수 없는 오류: {e}"
             }
 
-
-    # 전역 소설 처리 인스턴스 (지연 초기화) - Hugging Face 버전
-    novel_processor = None
-
-    def get_novel_processor():
-        """NovelProcessor 인스턴스 반환 (지연 초기화)"""
-        global novel_processor
-        if novel_processor is None:
-            novel_processor = NovelProcessor()
-        return novel_processor
 
     def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict:
         """
