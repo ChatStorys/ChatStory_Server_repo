@@ -174,14 +174,11 @@ def get_story_content(user_id: str, book_id: str) :
     if not book: # 찾는 책 없으면 None 반환
         return None
     
-    doc = db.Chapter.find_one({
-        "userId": user_id,
-        "bookId": book_id,
-        "workingFlag": False
-    }).sort("chapter_Num", ASCENDING)
-    
-    if not doc:
-        return None
+    # 여러 챕터 가져오기
+    chapters_cursor = db.Chapter.find(
+        {"userId": user_id, "bookId": book_id, "workingFlag": False}
+    ).sort("chapter_Num", ASCENDING)
+
 
     chapters: List[ChapterContent] = []
     for chap in chapters_cursor:
@@ -222,8 +219,9 @@ def get_story_content(user_id: str, book_id: str) :
             )
         )
 
+    created_at = book.get("completedAt") or book["_id"].generation_time
+
     # ChatStorage 안에 있는 모든 chapter의 content들 이어붙여 한 번에 보내기
-    # (List로, 기존에는 LLM Model, User 순으로 구현 되어있었으나 순서 User, LLM Model로 바꿔줄 것)
 
     return StoryContentResponse(
         bookId=book_id,
