@@ -1,4 +1,4 @@
-from pymongo import MongoClient, ReturnDocument
+from pymongo import MongoClient, ReturnDocument, DESCENDING
 from datetime import datetime, timedelta, timezone
 from app.db.mongo import db
 # from app.AI.router import continue_story, ChatMessageRequest  # AI 요청 스키마
