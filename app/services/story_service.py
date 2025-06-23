@@ -216,7 +216,7 @@ def get_story_content(user_id: str, book_id: str) :
             ChapterContent(
                 chapter_num=num,
                 content=full_text,
-                recommended_music=music_info
+                recommended_music=[music_info] if music_info else []
             )
         )
 
