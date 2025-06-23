@@ -173,10 +173,20 @@ async def get_archive_story(
     book_id: str,
     user_id: str = Depends(get_current_user)
 ):
-    story = get_story_content(user_id, book_id)
-    if not story:
-        raise HTTPException(status.HTTP_404_NOT_FOUND,
-                            detail="해당 소설을 찾을 수 없습니다.")
+    try:
+        story = get_story_content(user_id, book_id)
+    except Exception as e:
+        # 서비스 함수에서 던진 예외 메시지를 그대로 detail 에 담아 보냅니다
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"아카이브 조회 중 오류: {e}"
+        )
+
+    if story is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="해당 소설을 찾을 수 없습니다."
+        )
     return story
 
 # 7. 아카이브 소설 삭제

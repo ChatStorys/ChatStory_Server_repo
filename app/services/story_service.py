@@ -202,7 +202,7 @@ def get_story_content(user_id: str, book_id: str) :
                 content_lines.append(f"{m['User']} ")
             elif "LLM_Model" in m:
                 content_lines.append(f"{m['LLM_Model']} ")
-        full_text = "\n".join(content_lines)
+        full_text = " ".join(content_lines)
 
         # 5) 추천 음악 정보 추출 (music 필드가 {musicTitle, composer} 형태로 저장되어 있다고 가정)
         music_info = None
