@@ -1,17 +1,13 @@
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.AI.schemas import (
-    # ChatMessageRequest, ChatMessageResponse,
-    ChapterEndAIRequest, ChapterEndAIResponse
-)
-# from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
-import httpx
-import os
-from dotenv import load_dotenv
-from typing import List, Optional, Dict
-from app.AI.main import handle_chapter_summary_with_music
+# from fastapi import APIRouter, HTTPException, Depends, status
+# from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-ai_router = APIRouter()
+# # from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
+# import httpx
+# import os
+# from dotenv import load_dotenv
+# from typing import List, Optional, Dict
+
+# ai_router = APIRouter()
 # processor = NovelProcessor()
 
 # @ai_router.post("/story/continue")
@@ -30,20 +26,8 @@ ai_router = APIRouter()
     # except Exception as e:
     #     raise HTTPException(status_code=500, detail=str(e))
 
-@ai_router.post("/story/chapter/summary_with_music", response_model=ChapterEndAIResponse)
-def generate_chapter_summary(request: ChapterEndAIRequest):
-    """챕터 요약 및 음악 추천 엔드포인트"""
-    try:
-        # 챕터 요약 및 음악 추천 생성
-        result = handle_chapter_summary_with_music(
-            user_id=request.user_id,
-            book_id=request.book_id
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return result
+# 챕터 끝내기 클릭할 때 호출되는 라우터
+
 
 
 # @router.post("/save", 

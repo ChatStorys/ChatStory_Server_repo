@@ -25,7 +25,6 @@ class ChapterContent(BaseModel):
     recommended_music: Optional[MusicItem] = None
     
 class ChapterEndAIRequest(BaseModel): # 챕터 끝 request!
-    user_id: str
     book_id: str
 
 

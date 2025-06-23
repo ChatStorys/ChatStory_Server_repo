@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.schemas.story_schema import (
     StoryCreateRequest, StoryCreateResponse,
@@ -6,13 +6,16 @@ from app.schemas.story_schema import (
     FinishStoryRequest, FinishStoryResponse, 
     ArchiveItemResponse, StoryContentResponse, DeleteResponse
 )
+from app.AI.schemas import (
+    ChapterEndAIRequest, ChapterEndAIResponse
+)
 from app.services.story_service import (
     get_creating_story, create_story,
     finish_story,
     list_archived_stories,
     get_story_content, delete_story
 )
-from app.AI.main import handle_story_continue
+from app.AI.main import handle_chapter_summary_with_music, handle_story_continue
 from app.core.jwt import verify_access_token
 from typing import List
 # APIRouter 인스턴스 생성
@@ -116,6 +119,21 @@ async def front_chat(
     
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"{e}")
+
+@router.post("/story/chapter/summary_with_music", response_model=ChapterEndAIResponse)
+def generate_chapter_summary(request: ChapterEndAIRequest):
+    """챕터 요약 및 음악 추천 엔드포인트"""
+    try:
+        # 챕터 요약 및 음악 추천 생성
+        result = handle_chapter_summary_with_music(
+            user_id=request.user_id,
+            book_id=request.book_id
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return result
 
 # 소설 끝내기
 @router.post(
