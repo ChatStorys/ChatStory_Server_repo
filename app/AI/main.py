@@ -17,6 +17,67 @@ def get_novel_processor():
         novel_processor = NovelProcessor()
     return novel_processor
 
+def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict:
+    """
+    소설 계속 쓰기 요청 처리 함수 (Hugging Face 모델 버전)
+        
+    외부 서버에서 호출할 수 있는 함수입니다.
+    /story/continue 엔드포인트의 요청을 처리합니다.
+        
+    매개변수:
+        user_id: 사용자 ID
+        user_message: 사용자 메시지
+        book_id: 책 ID
+            
+    반환값:
+        처리 결과 딕셔너리
+    """
+    try:
+        result = get_novel_processor().generate_chapter(
+            user_id=user_id,
+            user_message=user_message,
+            book_id=book_id
+        )
+        return result
+            
+    except Exception as e:
+        # logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
+        return {
+            "status": "fail",
+            "code": 500,
+            "message": f"소설 저장 중 오류가 발생했습니다 {e}",
+            "prompt": None
+        }
+
+def handle_chapter_summary_with_music(self, user_id: str, book_id: str) -> Dict:
+    """
+    챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
+        
+    외부 서버에서 호출할 수 있는 함수입니다.
+    /story/chapter/summary_with_music 엔드포인트의 요청을 처리합니다.
+    현재 작업 중인 챕터(workingFlag=True)를 찾아 요약을 생성하고 음악을 추천합니다.
+        
+    매개변수:
+        user_id: 사용자 ID
+        book_id: 책 ID
+            
+    반환값:
+        처리 결과 딕셔너리
+    """
+    try:
+        result = get_novel_processor().finish_chapter_and_recommend_music(
+            user_id=user_id,
+            book_id=book_id
+        )
+        return result
+    except Exception as e:
+        return {
+            "status": "fail",
+            "code": 500,
+            "summary": f"알 수 없는 오류: {e}",
+            "recommended_music": []
+        }
+
 
 # 환경변수 로드
 load_dotenv()
@@ -307,66 +368,4 @@ class NovelProcessor:
                 "status": "fail",
                 "code": 500,
                 "message": f"알 수 없는 오류: {e}"
-            }
-
-
-    def handle_story_continue(user_id: str, user_message: str, book_id: str) -> Dict:
-        """
-        소설 계속 쓰기 요청 처리 함수 (Hugging Face 모델 버전)
-        
-        외부 서버에서 호출할 수 있는 함수입니다.
-        /story/continue 엔드포인트의 요청을 처리합니다.
-        
-        매개변수:
-            user_id: 사용자 ID
-            user_message: 사용자 메시지
-            book_id: 책 ID
-            
-        반환값:
-            처리 결과 딕셔너리
-        """
-        try:
-            result = get_novel_processor().generate_chapter(
-                user_id=user_id,
-                user_message=user_message,
-                book_id=book_id
-            )
-            return result
-            
-        except Exception as e:
-            # logging.error("generate_chapter 에러:\n%s", traceback.format_exc())
-            return {
-                "status": "fail",
-                "code": 500,
-                "message": f"소설 저장 중 오류가 발생했습니다 {e}",
-                "prompt": None
-            }
-
-    def handle_chapter_summary_with_music(self, user_id: str, book_id: str) -> Dict:
-        """
-        챕터 요약 및 음악 추천 요청 처리 함수 (Hugging Face 모델 버전)
-        
-        외부 서버에서 호출할 수 있는 함수입니다.
-        /story/chapter/summary_with_music 엔드포인트의 요청을 처리합니다.
-        현재 작업 중인 챕터(workingFlag=True)를 찾아 요약을 생성하고 음악을 추천합니다.
-        
-        매개변수:
-            user_id: 사용자 ID
-            book_id: 책 ID
-            
-        반환값:
-            처리 결과 딕셔너리
-        """
-        try:
-            result = get_novel_processor().finish_chapter_and_recommend_music(
-                user_id=user_id,
-                book_id=book_id
-            )
-            return result
-        except Exception as e:
-            return {
-                "status": "fail",
-                "code": 500,
-                "summary": f"알 수 없는 오류: {e}",
-                "recommended_music": []
             }
