@@ -2,17 +2,17 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
-class ChatMessageRequest(BaseModel):
-    user_id: str
-    user_message: str
-    book_id: str
+# class ChatMessageRequest(BaseModel):
+#     user_id: str
+#     user_message: str
+#     book_id: str
     
     
-class ChatMessageResponse(BaseModel):
-    status: str
-    code: int
-    message: str
-    prompt: str
+# class ChatMessageResponse(BaseModel):
+#     status: str
+#     code: int
+#     message: str
+#     prompt: str
     
 
 class MusicItem(BaseModel):

@@ -77,18 +77,18 @@ def get_creating_story(user_id: str):
         "workingFlag": True
     })
 
-def send_front_chat(user_id: str, book_id: str, prompt: str) -> Dict:
-    """
-    프론트에서 받은 입력을 AI continue_story 함수에 직접 전달
-    """
-    ai_req = ChatMessageRequest(
-        user_id=user_id,
-        user_message=prompt,
-        book_id=book_id
-    )
-    # continue_story 는 dict 응답을 바로 반환합니다.
-    result = continue_story(ai_req)
-    return result
+# def send_front_chat(user_id: str, book_id: str, prompt: str) -> Dict:
+#     """
+#     프론트에서 받은 입력을 AI continue_story 함수에 직접 전달
+#     """
+#     ai_req = ChatMessageRequest(
+#         user_id=user_id,
+#         user_message=prompt,
+#         book_id=book_id
+#     )
+#     # continue_story 는 dict 응답을 바로 반환합니다.
+#     result = continue_story(ai_req)
+#     return result
 
 # def end_chapter(book_id: str, req: ChapterEndAIRequest) -> ChapterEndAIResponse:
 #     # ai에 요청

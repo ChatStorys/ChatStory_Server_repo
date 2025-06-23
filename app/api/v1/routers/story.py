@@ -8,10 +8,11 @@ from app.schemas.story_schema import (
 )
 from app.services.story_service import (
     get_creating_story, create_story,
-    finish_story, send_front_chat,
+    finish_story,
     list_archived_stories,
     get_story_content, delete_story
 )
+from app.AI.main import handle_story_continue
 from app.core.jwt import verify_access_token
 from typing import List
 # APIRouter 인스턴스 생성
@@ -106,7 +107,7 @@ async def front_chat(
     current_user: str = Depends(get_current_user),
 ):
     try:
-        result = send_front_chat(
+        result = handle_story_continue(
             user_id=current_user,
             book_id=req.book_id,
             prompt=req.prompt

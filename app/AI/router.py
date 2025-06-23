@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.AI.schemas import (
-    ChatMessageRequest, ChatMessageResponse,
+    # ChatMessageRequest, ChatMessageResponse,
     ChapterEndAIRequest, ChapterEndAIResponse
 )
 from app.AI.client import send_message_to_ai_server, send_chapter_end_to_ai
@@ -9,23 +9,23 @@ import httpx
 import os
 from dotenv import load_dotenv
 from typing import List, Optional, Dict
-from app.AI.main import handle_chapter_summary_with_music, handle_story_continue
+from app.AI.main import handle_chapter_summary_with_music
 
 ai_router = APIRouter()
 # processor = NovelProcessor()
 
-@ai_router.post("/story/continue")
-def continue_story(request: ChatMessageRequest):
-    """소설 계속 쓰기 엔드포인트"""
-    try:
-        # AI 모델을 사용하여 소설 생성
-        result = handle_story_continue(
-            user_id=request.user_id,
-            user_message=request.user_message,
-            book_id=request.book_id
-        )
+# @ai_router.post("/story/continue")
+# def continue_story(request: ChatMessageRequest):
+#     """소설 계속 쓰기 엔드포인트"""
+#     try:
+#         # AI 모델을 사용하여 소설 생성
+#         result = handle_story_continue(
+#             user_id=request.user_id,
+#             user_message=request.user_message,
+#             book_id=request.book_id
+#         )
         
-        return result
+#         return result
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
