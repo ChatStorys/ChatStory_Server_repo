@@ -265,7 +265,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": str(e)
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
             # 2. 챕터 번호 가져오기
@@ -277,7 +278,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": str(e)
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
             # 3. 채팅내용 텍스트화
@@ -294,7 +296,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"에러 발생 : {e}"
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
             # 4. 요약 생성
@@ -307,7 +310,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"요약 생성 실패: {e}"
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
             # 5. 요약 저장
@@ -322,7 +326,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"요약 저장 실패: {e}"
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
             # 6. 음악 추천 (Algorithm 1)
@@ -371,7 +376,8 @@ class NovelProcessor:
                 return {
                     "status": "fail",
                     "code": 500,
-                    "message": f"음악 추천 실패: {e}"
+                    "summary": str(e),
+                    "recommended_music": list()
                 }
 
         except Exception as e:
@@ -379,5 +385,6 @@ class NovelProcessor:
             return {
                 "status": "fail",
                 "code": 500,
-                "message": f"알 수 없는 오류: {e}"
+                "summary": str(e),
+                "recommended_music": list()
             }
