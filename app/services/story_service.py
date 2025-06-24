@@ -254,7 +254,7 @@ def delete_story(user_id: str, book_id: str) -> bool:
         "bookId": book_id
     })
     try: 
-        if (book_res.deleted_count == 1 and chap_res.deleted_count == 1 and chat_res.deleted_count == 1):
+        if (book_res.deleted_count == 1):
             return True
     except Exception as e:
         return f"삭제하다가 문제가 발생했습니다{e}"
