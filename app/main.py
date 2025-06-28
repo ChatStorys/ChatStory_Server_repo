@@ -1,9 +1,13 @@
 import os
 from fastapi import FastAPI
+from fastapi import Request
 from app.api.v1.routers import auth, story
-from app.AI import router as ai_router
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+# from app.AI.schemas import (
+#     # ChatMessageRequest, ChatMessageResponse,
+#     ChapterEndAIRequest, ChapterEndAIResponse
+# )
 
 load_dotenv()
 
@@ -11,14 +15,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("FRONTEND_ORIGIN")],  
+    allow_origins=[os.getenv("FRONTEND_ORIGIN", "FRONTEND_ORIGIN")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Authorization"],
 )
 
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-
 app.include_router(story.router, prefix="/story", tags=["Stories"])
 
 # app.include_router(ai_router.router, prefix="/ai", tags=["AI ChatStory"])
@@ -30,3 +34,8 @@ app.include_router(story.router, prefix="/story", tags=["Stories"])
 @app.get("/")
 def root():
     return {"message": "Welcome to ChatStory API!"}
+
+@app.api_route("/{path:path}", methods=["CONNECT"])
+async def block_connect(request: Request):
+    return PlainTextResponse("CONNECT method not allowed", status_code=405)
+

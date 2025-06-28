@@ -1,8 +1,6 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Response, Depends, status
 # 회원 가입
-
 from app.schemas.user_schema import UserCreate, UserCreateResponse
-
 from app.services.user_service import create_user
 # 로그인
 from app.schemas.user_schema import UserLoginRequest, UserLoginResponse
@@ -19,7 +17,6 @@ async def register(user: UserCreate):
     # 1. 이미 존재하는 ID 체크
     if get_user_by_id(user.user_id):
         raise HTTPException(status_code=403, detail="이미 존재하는 ID입니다.")
-
     # 2. 바로 회원가입 처리 (동기/비동기)
     try:
         create_user(user.user_id, user.name, user.password)
@@ -35,7 +32,8 @@ async def register(user: UserCreate):
     )
 
 
-@router.post("/login", response_model=UserLoginResponse)
+@router.post("/login", response_model=UserLoginResponse, status_code=status.HTTP_200_OK,
+             summary = "사용자 로그인 및 토큰 발급")
 async def login(user: UserLoginRequest, response: Response):
     db_user = get_user_by_id(user.user_id)
     if not db_user:
@@ -57,5 +55,7 @@ async def login(user: UserLoginRequest, response: Response):
     return UserLoginResponse(
         status="success",
         code=200,
-        message=f"{db_user['name']}님, 환영합니다!"
+        message=f"{db_user['name']}님, 환영합니다!",
+        access_token = access_token,
+        token_type = "bearer"
     )

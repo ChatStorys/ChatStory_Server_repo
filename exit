@@ -1,0 +1,51 @@
+*   [33m35c1547[m[33m ([m[1;36mHEAD -> [m[1;32mtest[m[33m, [m[1;31morigin/test[m[33m)[m Merge branch 'test' of https://github.com/ChatStorys/ChatStory_Server_repo into test
+[31m|[m[32m\[m  
+* [32m|[m [33md54cf5c[m auth.py 충돌 해결
+* [32m|[m   [33m4530bea[m Merge branch 'main' into test
+[33m|[m[34m\[m [32m\[m  
+[33m|[m * [32m|[m [33m636b8f4[m[33m ([m[1;32mmain[m[33m)[m 벡, 웹 cors 이슈 해결
+[33m|[m [34m|[m [32m|[m *   [33m28538e6[m[33m ([m[1;31morigin/main[m[33m)[m Merge pull request #5 from ChatStorys/test
+[33m|[m [34m|[m [32m|[m [35m|[m[32m\[m  
+[33m|[m [34m|[m [32m|[m [35m|[m[32m/[m  
+[33m|[m [34m|[m [32m|[m[32m/[m[35m|[m   
+[33m|[m [34m|[m * [35m|[m [33macf28c1[m Merge pull request #4 from ChatStorys/main
+[33m|[m [34m|[m[33m/[m[35m|[m [35m|[m 
+[33m|[m[33m/[m[34m|[m [35m|[m[35m/[m  
+[33m|[m [34m|[m *   [33m192a02a[m Merge branch 'test' into main
+[33m|[m [34m|[m [1;33m|[m[33m\[m  
+[33m|[m [34m|[m[33m_[m[1;33m|[m[33m/[m  
+[33m|[m[33m/[m[34m|[m [1;33m|[m   
+* [34m|[m [1;33m|[m [33m4852557[m Update main.py
+* [34m|[m [1;33m|[m [33m177218b[m Update main.py
+* [34m|[m [1;33m|[m [33mcbc3db3[m FIX: main.py
+* [34m|[m [1;33m|[m [33me5e419e[m FIX: test branch main.py
+* [34m|[m [1;33m|[m [33m28bf4ee[m Update mongo.py
+* [34m|[m [1;33m|[m [33m2b74edb[m update: requirements.txt
+* [34m|[m [1;33m|[m [33m278a996[m Fix: Dockerfile
+* [34m|[m [1;33m|[m [33mfcb9b90[m test poetry
+* [34m|[m [1;33m|[m [33me99f11c[m add pytest and test deployment
+* [34m|[m [1;33m|[m [33maeaf58c[m test deployment
+[1;34m|[m [34m|[m * [33mcc82952[m FIX: mongo.py
+[1;34m|[m [34m|[m * [33m91c0292[m Update README.md
+[1;34m|[m [34m|[m * [33me0fd696[m Update README.md
+[1;34m|[m [34m|[m * [33mdb29a6b[m Update README.md
+[1;34m|[m [34m|[m * [33m2315c3f[m Update README.md
+[1;34m|[m [34m|[m[34m/[m  
+[1;34m|[m * [33mb14bc73[m 전체 내용 수정(모든 함수 로컬 동작 완료, AI 연동 함수 제외)
+[1;34m|[m[1;34m/[m  
+*   [33m8ce4701[m 프론트에서 벡으로 데이터가 전달된다고 가정하고 구현, 벡과 ai가 통신한다고 가정하고 ai파일 만들고 구현했지만 필요없다면 신경 안써도 됨 Merge branch 'main' of https://github.com/ChatStorys/ChatStory_Server_repo
+[1;35m|[m[1;36m\[m  
+[1;35m|[m *   [33m1227991[m Merge pull request #1 from miining/main
+[1;35m|[m [31m|[m[32m\[m  
+[1;35m|[m [31m|[m * [33m1cabef6[m feat: requirements.txt
+[1;35m|[m [31m|[m * [33mfb71a0a[m feat: Dockerfile (작성중)
+[1;35m|[m [31m|[m[31m/[m  
+[1;35m|[m * [33m8e05858[m Update .gitignore
+* [32m|[m [33m15f890f[m 프론트에서 벡으로 보낸다고 가정하고 구현, db에 저장하는것까지 했음 (ai랑 통신할거랍시고 ai파일 만들어서 구현했는데 이건 신경 안 써도 될 듯)
+[32m|[m[32m/[m  
+* [33m063d5d8[m WIP: Save before filter-branch
+* [33m27db67e[m Initial commit for ChatStory server
+* [33m87cdaca[m Initial commit for ChatStory project
+* [33ma316d28[m[33m ([m[mrefs/original/refs/heads/main[m[33m)[m WIP: Save before filter-branch
+* [33m620e3e8[m[33m ([m[mrefs/original/refs/remotes/origin/main[m[33m)[m Initial commit for ChatStory server
+* [33m1b324c3[m Initial commit for ChatStory project
